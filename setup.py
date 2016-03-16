@@ -9,7 +9,7 @@ setup(
     url='https://github.com/SpotOnInc/espwrap',
     license='MIT',
     author='SpotOn',
-    packages=[str('espwrap')],
+    packages=[str('espwrap'), str('espwrap.adaptors')],
     platforms='any',
     extras_require={
         'mandrill': ['mandrill>=1.0.57'],
