@@ -5,6 +5,7 @@ import collections
 import itertools
 import sys
 
+
 if sys.version_info < (3,):
     range = xrange
 
@@ -24,11 +25,10 @@ class MassEmail(object):
 
     def __init__(self, subject='', from_addr='', text='', html='',
                  send_partition=500, reply_to_addr='', track_clicks=False,
-                 track_opens=False
-                 ):
-        self.clear_recipients()
-        self.clear_global_merge_vars()
-        self.clear_tags()
+                 track_opens=False):
+        self.recipients = []
+        self.global_merge_vars = {}
+        self.tags = []
 
         self.subject = subject
         self.from_addr = from_addr
@@ -46,7 +46,7 @@ class MassEmail(object):
             'text/html': html,
         }
 
-    def add_recipient(self, email, name='', merge_vars={}):
+    def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, collections.Mapping):
             recip = email
@@ -54,7 +54,7 @@ class MassEmail(object):
             recip = {
                 'name': name,
                 'email': email,
-                'merge_vars': merge_vars,
+                'merge_vars': merge_vars or {},
             }
 
         # tuple for performance
@@ -65,7 +65,7 @@ class MassEmail(object):
             self.add_recipient(recip)
 
     def clear_recipients(self):
-        self.recipients = list()
+        self.recipients = []
 
     def add_global_merge_vars(self, **kwargs):
         for key, val in kwargs.items():
@@ -78,17 +78,15 @@ class MassEmail(object):
         self.tags += tags
 
     def clear_tags(self):
-        self.tags = list()
+        self.tags = []
 
     def set_body(self, content, mimetype='text/html'):
         self.body[mimetype] = content
 
     def set_from_addr(self, from_addr):
-        # TODO verify that this is a valid email string
         self.from_addr = from_addr
 
     def set_reply_to_addr(self, reply_to_addr):
-        # TODO verify that this is a valid email string
         self.reply_to_addr = reply_to_addr
 
     def set_subject(self, subject):
