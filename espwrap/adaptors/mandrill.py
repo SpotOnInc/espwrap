@@ -46,6 +46,7 @@ class MandrillMassEmail(MassEmail):
                 'content': value,
             } for key, value in self.global_merge_vars.items()],
             'merge_vars': [],
+            'important': self.important,
         }
 
         for index, recip in enumerate(recipients):

@@ -39,6 +39,8 @@ class MassEmail(object):
         self.track_clicks = track_clicks
         self.track_opens = track_opens
 
+        self.important = False
+
         self.body = {
             'text/plain': text,
             'text/html': html,
@@ -103,6 +105,9 @@ class MassEmail(object):
 
     def disable_open_tracking(self):
         self.track_opens = False
+
+    def set_importance(self, important):
+        self.important = bool(important)
 
     def validate(self):
         if not self.subject or not self.from_addr:
