@@ -7,6 +7,7 @@ from smtpapi import SMTPAPIHeader
 
 from espwrap.base import MassEmail
 
+
 if sys.version_info < (3,):
     range = xrange
 
@@ -34,11 +35,11 @@ class SendGridMassEmail(MassEmail):
 
         return super(SendGridMassEmail, self).add_tag(tag)
 
-    def add_tags(self, tags):
+    def add_tags(self, *tags):
         if len(tags) > 10:
             raise Exception('Too many tags, SendGrid limits to 10 per email')
 
-        return super(SendGridMassEmail, self).add_tags(tags)
+        return super(SendGridMassEmail, self).add_tags(*tags)
 
     def _prepare_payload(self, recipients=None):
         def namestr(rec):
@@ -59,22 +60,22 @@ class SendGridMassEmail(MassEmail):
         for key, val in self.global_merge_vars.items():
             keystr = ':{}'.format(key)
 
-            new_key = '{}{}{}'.format(self.delimiters[0], key, self.delimiters[1])
+            new_key = '{1}{0}{2}'.format(key, *self.delimiters)
 
-            merge_vars[new_key] = [keystr for _ in range(num_rec)]
+            merge_vars[new_key] = [keystr] * num_rec
 
             payload.add_section(keystr, val)
 
         for index, recip in enumerate(recipients):
             payload.add_to(recip if isinstance(recip, str) else namestr(recip))
 
-            for k, v in recip.get('merge_vars', {}).items():
-                new_key = '{}{}{}'.format(self.delimiters[0], k, self.delimiters[1])
+            for rkey, rvalue in recip.get('merge_vars', {}).items():
+                new_key = '{1}{0}{2}'.format(rkey, *self.delimiters)
 
                 if not merge_vars.get(new_key):
-                    merge_vars[new_key] = [None for _ in range(num_rec)]
+                    merge_vars[new_key] = [None] * num_rec
 
-                merge_vars[new_key][index] = v
+                merge_vars[new_key][index] = rvalue
 
         payload.set_substitutions(merge_vars)
 
