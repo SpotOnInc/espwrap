@@ -28,8 +28,6 @@ class SendGridMassEmail(MassEmail):
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
 
-        return self
-
     def add_tag(self, tag):
         if len(self.tags) >= 10:
             raise Exception('Cannot add new tag {}, SendGrid limits to 10 per email'.format(tag))
