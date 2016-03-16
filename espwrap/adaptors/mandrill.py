@@ -4,7 +4,7 @@ import sys
 
 import mandrill
 
-from espwrap import MassEmail
+from espwrap.base import MassEmail
 
 if sys.version_info < (3,):
     range = xrange

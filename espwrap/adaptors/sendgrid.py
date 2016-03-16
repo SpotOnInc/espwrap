@@ -1,11 +1,11 @@
 from __future__ import print_function, division, unicode_literals
 
-from espwrap import MassEmail
-
-import sendgrid
 import sys
 
+import sendgrid
 from smtpapi import SMTPAPIHeader
+
+from espwrap.base import MassEmail
 
 if sys.version_info < (3,):
     range = xrange
