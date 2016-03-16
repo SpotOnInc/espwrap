@@ -66,7 +66,7 @@ class MassEmail(object):
         self.recipients = list()
 
     def add_global_merge_vars(self, **kwargs):
-        for key, val in kwargs:
+        for key, val in kwargs.items():
             self.global_merge_vars[key] = val
 
     def clear_global_merge_vars(self):
