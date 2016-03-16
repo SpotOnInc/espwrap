@@ -39,6 +39,7 @@ class MandrillMassEmail(MassEmail):
             'text': self.body.get('text/plain'),
             'subject': self.subject,
             'to': [],
+            'preserve_recipients': False,
             'merge': True,
             'merge_language': 'mailchimp',
             'global_merge_vars': [{
