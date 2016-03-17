@@ -61,7 +61,7 @@ class MassEmail(object):
         # tuple for performance
         self.recipients = itertools.chain(self.recipients, (recip,))
 
-    def add_recipients(self, *recipients):
+    def add_recipients(self, recipients):
         for recip in recipients:
             self.add_recipient(recip)
 
