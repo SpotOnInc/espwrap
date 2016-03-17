@@ -69,6 +69,9 @@ class MandrillMassEmail(MassEmail):
         payload['track_opens'] = self.track_opens
         payload['tags'] = self.tags
 
+        if self.webhook_data:
+            payload['metadata'] = self.webhook_data
+
         return payload
 
     def send(self):

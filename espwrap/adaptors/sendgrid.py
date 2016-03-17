@@ -77,6 +77,9 @@ class SendGridMassEmail(MassEmail):
 
                 merge_vars[new_key][index] = rvalue
 
+        if self.webhook_data:
+            payload.set_unique_args(self.webhook_data)
+
         payload.set_substitutions(merge_vars)
 
         payload.add_filter('clicktrack', 'enable', self.track_clicks and 1 or 0)
