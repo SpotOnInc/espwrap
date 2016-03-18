@@ -32,11 +32,12 @@ class MassEmail(object):
 
     def __init__(self, subject='', from_addr='', text='', html='',
                  send_partition=500, reply_to_addr='', webhook_data=None,
-                 track_clicks=False, track_opens=False):
+                 ip_pool=None, track_clicks=False, track_opens=False):
         self.recipients = []
         self.global_merge_vars = {}
         self.tags = []
         self.webhook_data = webhook_data
+        self.ip_pool = ip_pool
 
         self.subject = subject
         self.from_addr = from_addr
@@ -117,6 +118,9 @@ class MassEmail(object):
 
     def set_importance(self, important):
         self.important = bool(important)
+
+    def set_ip_pool(self, value):
+        self.ip_pool = value
 
     def validate(self):
         if not self.subject or not self.from_addr:
