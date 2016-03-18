@@ -4,17 +4,11 @@ import sys
 
 import mandrill
 
-from espwrap.base import MassEmail
+from espwrap.base import MassEmail, batch
+
 
 if sys.version_info < (3,):
     range = xrange
-
-
-def batch(iterable, count=1):
-    total = len(iterable)
-
-    for ndx in range(0, total, count):
-        yield iterable[ndx:min(ndx + count, total)]
 
 
 class MandrillMassEmail(MassEmail):
