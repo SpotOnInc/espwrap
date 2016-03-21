@@ -62,6 +62,9 @@ class MassEmail(object):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, collections.Mapping):
             recip = email
+
+            if recip.get('merge_vars') is None:
+                recip['merge_vars'] = {}
         else:
             recip = {
                 'name': name,
@@ -100,6 +103,14 @@ class MassEmail(object):
         '''
 
         return self.solidify_recipients()
+
+    def get_raw_recipients(self):
+        '''
+        Returns the internal recipients listing in whatever, potentially unsafe,
+        form it might be in (likely some itertools chain).
+        '''
+
+        return self.recipients
 
     def add_global_merge_vars(self, **kwargs):
         for key, val in kwargs.items():
