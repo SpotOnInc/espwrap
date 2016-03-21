@@ -10,7 +10,7 @@ if sys.version_info < (3,):
 
 
 class NoopMassEmail(MassEmail):
-    def __init__(self, api_key, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(NoopMassEmail, self).__init__(*args, **kwargs)
 
     def send(self):
