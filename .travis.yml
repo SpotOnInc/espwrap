@@ -1,11 +1,9 @@
 language: python
 python:
   - "2.7"
-  - "3.2"
   - "3.3"
   - "3.4"
-  - "3.5.1"
-# SEE: https://github.com/behave/behave/commit/b949e1af0233505d94144139f82bac008e7d1f35#diff-354f30a63fb0907d4ad57269548329e3
+  - "3.5"
   - "nightly" # currently points to 3.6-dev
 # command to install dependencies
 install: "pip install -e .[mandrill,sendgrid]"
