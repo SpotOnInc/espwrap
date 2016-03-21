@@ -1,6 +1,6 @@
 # ESPwrap
 
-![Travis-CI Build Status](https://api.travis-ci.org/SpotOnInc/espwrap.svg)
+[![Travis-CI Build Status](https://api.travis-ci.org/SpotOnInc/espwrap.svg)](https://travis-ci.org/SpotOnInc/espwrap)
 
 A light wrapper around email service providers. Allows (semi-)seamless movement between supported ESP backends.
 
