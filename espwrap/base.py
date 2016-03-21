@@ -25,12 +25,6 @@ class MassEmail(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def _prepare_payload(self):
-        raise NotImplementedError(
-            'Payloads must be generated on a per-ESP basis'
-        )
-
-    @abc.abstractmethod
     def send(self):
         raise Exception('Send method must be defined on a per-ESP basis')
 
