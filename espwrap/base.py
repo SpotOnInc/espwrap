@@ -11,6 +11,10 @@ if sys.version_info < (3,):
 
 
 def batch(iterable, count=1):
+    '''
+    Split an iterable into a list of iterables having a length <= `count`
+    '''
+
     total = len(iterable)
 
     for ndx in range(0, total, count):
@@ -75,6 +79,28 @@ class MassEmail(object):
     def clear_recipients(self):
         self.recipients = []
 
+    def solidify_recipients(self):
+        '''
+        Since recipients can be chained iterables of any form, but must
+        eventually become lists that are passed to some upstream API, we want
+        a consistent place to do that step. Thus, this will listify the internal
+        iterable of recipients.
+        '''
+
+        self.recipients = list(self.recipients)
+
+        return self.recipients
+
+    def get_recipients(self):
+        '''
+        Safely returns the internal recipients listing, casting to an actual list.
+
+        This will implicitly listify the recipients, see #solidify_recipients()
+        for details
+        '''
+
+        return self.solidify_recipients()
+
     def add_global_merge_vars(self, **kwargs):
         for key, val in kwargs.items():
             self.global_merge_vars[key] = val
@@ -82,14 +108,30 @@ class MassEmail(object):
     def clear_global_merge_vars(self):
         self.global_merge_vars = {}
 
-    def add_tags(self, *tags):
-        self.tags += tags
+    def get_global_merge_vars(self):
+        return self.global_merge_vars
+
+    def get_tags(self):
+        return self.tags
 
     def clear_tags(self):
         self.tags = []
 
+    def add_tags(self, *tags):
+        self.tags += tags
+
     def set_body(self, content, mimetype='text/html'):
         self.body[mimetype] = content
+
+    def get_body(self, mimetype):
+        if mimetype:
+            spec = self.body.get(mimetype)
+            if spec:
+                return spec
+
+            raise Exception('Specified mimetype has not been set in body')
+
+        return self.body
 
     def set_from_addr(self, from_addr):
         self.from_addr = from_addr
