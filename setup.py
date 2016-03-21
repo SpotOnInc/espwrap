@@ -11,6 +11,8 @@ setup(
     author='SpotOn',
     packages=[str('espwrap'), str('espwrap.adaptors')],
     platforms='any',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     extras_require={
         'mandrill': ['mandrill>=1.0.57'],
         'sendgrid': [

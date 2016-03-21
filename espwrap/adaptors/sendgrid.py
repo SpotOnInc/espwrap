@@ -42,7 +42,7 @@ class SendGridMassEmail(MassEmail):
             return '{} <{}>'.format(rec['name'], rec['email'])
 
         if not recipients:
-            recipients = list(self.recipients)
+            recipients = self.solidify_recipients()
 
         num_rec = len(recipients)
 
