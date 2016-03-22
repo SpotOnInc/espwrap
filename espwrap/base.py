@@ -9,6 +9,10 @@ import sys
 if sys.version_info < (3,):
     range = xrange
 
+MIMETYPE_HTML = 'text/html'
+MIMETYPE_PLAIN = 'text/plain'
+MIMETYPE_TEXT = MIMETYPE_PLAIN
+
 
 def batch(iterable, count=1):
     '''
@@ -49,8 +53,8 @@ class MassEmail(object):
         self.important = False
 
         self.body = {
-            'text/plain': text,
-            'text/html': html,
+            MIMETYPE_PLAIN: text,
+            MIMETYPE_HTML: html,
         }
 
     def add_recipient(self, email, name='', merge_vars=None):
@@ -126,16 +130,16 @@ class MassEmail(object):
     def add_tags(self, *tags):
         self.tags += tags
 
-    def set_body(self, content, mimetype='text/html'):
+    def set_body(self, content, mimetype=MIMETYPE_HTML):
         self.body[mimetype] = content
 
-    def get_body(self, mimetype):
+    def get_body(self, mimetype=None):
         if mimetype:
             spec = self.body.get(mimetype)
             if spec:
                 return spec
 
-            raise Exception('Specified mimetype has not been set in body')
+            raise AttributeError('Specified mimetype has not been set in body')
 
         return self.body
 

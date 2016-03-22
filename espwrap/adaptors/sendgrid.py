@@ -5,7 +5,7 @@ import sys
 import sendgrid
 from smtpapi import SMTPAPIHeader
 
-from espwrap.base import MassEmail, batch
+from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 
 
 if sys.version_info < (3,):
@@ -99,11 +99,11 @@ class SendGridMassEmail(MassEmail):
             if self.reply_to_addr:
                 msg.set_replyto(self.reply_to_addr)
 
-            if self.body['text/plain']:
-                msg.set_text(self.body['text/plain'])
+            if self.body[MIMETYPE_TEXT]:
+                msg.set_text(self.body[MIMETYPE_TEXT])
 
-            if self.body['text/html']:
-                msg.set_html(self.body['text/html'])
+            if self.body[MIMETYPE_HTML]:
+                msg.set_html(self.body[MIMETYPE_HTML])
 
             if self.important:
                 msg.set_headers(Priority='Urgent', Importance='high')

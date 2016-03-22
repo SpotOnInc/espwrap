@@ -4,6 +4,9 @@ from __future__ import print_function, division, unicode_literals
 
 import sys
 
+import pytest
+
+from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.noop import NoopMassEmail
 
 if sys.version_info < (3,):
@@ -88,3 +91,18 @@ def test_can_lazily_add_recipients():
     recips_list = me.get_recipients()
 
     assert len(recips_list) == gen_count
+
+
+def test_body_defaults_to_html():
+    me = NoopMassEmail()
+    msg = '<h1>Hello!</h1>'
+
+    me.set_body(msg)
+
+    assert me.get_body().get(MIMETYPE_HTML) == msg
+    assert me.get_body(mimetype=MIMETYPE_HTML) == msg
+
+    with pytest.raises(AttributeError) as e:
+        me.get_body(mimetype=MIMETYPE_TEXT)
+
+    assert 'mimetype' in str(e.value)

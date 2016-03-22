@@ -4,7 +4,7 @@ import sys
 
 import mandrill
 
-from espwrap.base import MassEmail, batch
+from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 
 
 if sys.version_info < (3,):
@@ -29,8 +29,8 @@ class MandrillMassEmail(MassEmail):
 
         payload = {
             'from_email': self.from_addr,
-            'html': self.body.get('text/html'),
-            'text': self.body.get('text/plain'),
+            'html': self.body.get(MIMETYPE_HTML),
+            'text': self.body.get(MIMETYPE_TEXT),
             'subject': self.subject,
             'to': [],
             'preserve_recipients': False,
