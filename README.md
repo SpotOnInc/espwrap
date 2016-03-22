@@ -4,6 +4,15 @@
 
 A light wrapper around email service providers. Allows (semi-)seamless movement between supported ESP backends.
 
+Supported on, and [tested against](https://travis-ci.org/SpotOnInc/espwrap), the following versions of Python (or see `.travis.yml`):
+
+- 2.7
+- 3.3
+- 3.4
+- 3.5
+
+We also test against nightly, but may prioritize bugs found on this version of Python lower than others.
+
 ## Example Usage
 ```python
 from espwrap.adaptors.mandrill import MandrillMassEmail
@@ -34,7 +43,6 @@ Full/partial support is relative to the overall ESPwrap feature set. "Full" supp
 - SendGrid (Full as of 21 March 2016)
 
 Don't see your ESP in the list? It's easy to write an adaptor! Perhaps check out the Mandrill adaptor and write your own based on it. Pull requests are always welcome!
-
 
 ## ESPwrap is open-source!
 ```

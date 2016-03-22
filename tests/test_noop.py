@@ -106,3 +106,41 @@ def test_body_defaults_to_html():
         me.get_body(mimetype=MIMETYPE_TEXT)
 
     assert 'mimetype' in str(e.value)
+
+
+def test_plain_text_body_independent():
+    me = NoopMassEmail()
+    msg_text = 'Tester Test'
+    msg_html = '<h1>Tester Test HTML</h1>'
+
+    me.set_body(msg_html)
+    me.set_body(msg_text, mimetype=MIMETYPE_TEXT)
+
+    assert me.get_body(mimetype=MIMETYPE_HTML) == msg_html
+    assert me.get_body(mimetype=MIMETYPE_TEXT) == msg_text
+
+
+def test_starts_with_no_tags():
+    me = NoopMassEmail()
+
+    assert len(me.get_tags()) == 0
+
+
+def test_can_add_tags():
+    me = NoopMassEmail()
+
+    me.add_tags('test', 'mode')
+
+    assert len(me.get_tags()) == 2
+
+
+def test_can_clear_all_tags():
+    me = NoopMassEmail()
+
+    me.add_tags('test', 'mode')
+
+    assert len(me.get_tags()) == 2
+
+    me.clear_tags()
+
+    assert len(me.get_tags()) == 0
