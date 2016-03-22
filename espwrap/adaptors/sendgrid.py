@@ -22,15 +22,21 @@ class SendGridMassEmail(MassEmail):
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
 
-    def add_tag(self, tag):
-        if len(self.tags) >= 10:
-            raise Exception('Cannot add new tag {}, SendGrid limits to 10 per email'.format(tag))
+    def get_variable_delimiters(self, as_dict=False):
+        if as_dict:
+            return {
+                'start': self.delimiters[0],
+                'end': self.delimiters[1],
+            }
 
-        return super(SendGridMassEmail, self).add_tag(tag)
+        return self.delimiters
 
     def add_tags(self, *tags):
         if len(tags) > 10:
             raise Exception('Too many tags, SendGrid limits to 10 per email')
+
+        if len(tags) + len(self.tags) > 10:
+            raise Exception('Requested tags would have raised total to above Sendgrid limit of 10')
 
         return super(SendGridMassEmail, self).add_tags(*tags)
 
