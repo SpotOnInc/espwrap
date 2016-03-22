@@ -6,11 +6,31 @@ import sys
 
 import pytest
 
-from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT
+from espwrap.base import batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.noop import NoopMassEmail
 
 if sys.version_info < (3,):
     range = xrange
+
+
+def generate_recipients(count=10):
+        for x in range(count):
+            yield {
+                'name': 'Test Recip {}'.format(x),
+                'email': 'test+{}@something.com'.format(x),
+            }
+
+
+def test_batch():
+    tester = ['lol']*500
+
+    res = list(batch(tester, 5))
+
+    assert len(res) == 100
+
+    lengths = [len(x) for x in res]
+
+    assert max(lengths) == 5
 
 
 def test_instantiatable():
@@ -61,14 +81,7 @@ def test_add_recipients():
     assert len(recips) == 1
 
 
-def test_can_lazily_add_recipients():
-    def generate_recipients(count=10):
-        for x in range(count):
-            yield {
-                'name': 'Test Recip {}'.format(x),
-                'email': 'test+{}@something.com'.format(x),
-            }
-
+def test_can_lazily_add_recipients_and_solidify():
     gen_count = 20
 
     me = NoopMassEmail()
@@ -79,7 +92,7 @@ def test_can_lazily_add_recipients():
 
     assert hasattr(recips, '__iter__') and not hasattr(recips, '__len__')
 
-    recips_list = me.get_recipients()
+    recips_list = me.solidify_recipients()
 
     assert len(recips_list) == gen_count
 
@@ -165,3 +178,107 @@ def test_set_body_with_mimetype():
 
     assert me.get_body(mimetype=MIMETYPE_HTML) == msg_html
     assert me.get_body(mimetype=MIMETYPE_TEXT) == msg_text
+
+
+def test_from_addr():
+    me = NoopMassEmail()
+    addr = 'spam@spam.com'
+
+    me.set_from_addr(addr)
+
+    assert me.get_from_addr() == addr
+
+
+def test_reply_to_addr():
+    me = NoopMassEmail()
+    addr = 'spam@spam.com'
+
+    me.set_reply_to_addr(addr)
+
+    assert me.get_reply_to_addr() == addr
+
+
+def test_subject():
+    me = NoopMassEmail()
+    sub = 'Testing'
+
+    me.set_subject(sub)
+
+    assert me.get_subject() == sub
+
+
+def test_validate():
+    me = NoopMassEmail()
+
+    with pytest.raises(Exception) as e:
+        me.validate()
+
+    assert 'address and subject' in str(e)
+
+    me.set_subject('something')
+    me.set_from_addr('spam@spam.com')
+
+    me.validate()
+
+
+def test_webhook_data():
+    me = NoopMassEmail()
+    sub = 'Testing'
+
+    me.set_webhook_data(sub)
+
+    assert me.get_webhook_data() == sub
+
+
+def test_click_tracking():
+    me = NoopMassEmail()
+
+    assert not me.get_click_tracking_status()
+
+    me.enable_click_tracking()
+
+    assert me.get_click_tracking_status() is True
+
+    me.disable_click_tracking()
+
+    assert me.get_click_tracking_status() is False
+
+
+def test_open_tracking():
+    me = NoopMassEmail()
+
+    assert not me.get_open_tracking_status()
+
+    me.enable_open_tracking()
+
+    assert me.get_open_tracking_status() is True
+
+    me.disable_open_tracking()
+
+    assert me.get_open_tracking_status() is False
+
+
+def test_importance():
+    me = NoopMassEmail()
+
+    me.set_importance(True)
+    assert me.get_importance() is True
+
+    me.set_importance(False)
+    assert me.get_importance() is False
+
+
+def test_ip_pool():
+    me = NoopMassEmail()
+    pool = 'abc_group'
+
+    me.set_ip_pool(pool)
+
+    assert me.get_ip_pool() == pool
+
+
+def test_send():
+    me = NoopMassEmail()
+
+    with pytest.raises(NotImplementedError):
+        me.send()

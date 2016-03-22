@@ -146,14 +146,26 @@ class MassEmail(object):
     def set_from_addr(self, from_addr):
         self.from_addr = from_addr
 
+    def get_from_addr(self):
+        return self.from_addr
+
     def set_reply_to_addr(self, reply_to_addr):
         self.reply_to_addr = reply_to_addr
+
+    def get_reply_to_addr(self):
+        return self.reply_to_addr
 
     def set_subject(self, subject):
         self.subject = subject
 
+    def get_subject(self):
+        return self.subject
+
     def set_webhook_data(self, data):
         self.webhook_data = data
+
+    def get_webhook_data(self):
+        return self.webhook_data
 
     def enable_click_tracking(self):
         self.track_clicks = True
@@ -161,17 +173,29 @@ class MassEmail(object):
     def disable_click_tracking(self):
         self.track_clicks = False
 
+    def get_click_tracking_status(self):
+        return self.track_clicks
+
     def enable_open_tracking(self):
         self.track_opens = True
 
     def disable_open_tracking(self):
         self.track_opens = False
 
+    def get_open_tracking_status(self):
+        return self.track_opens
+
     def set_importance(self, important):
         self.important = bool(important)
 
+    def get_importance(self):
+        return self.important
+
     def set_ip_pool(self, value):
         self.ip_pool = value
+
+    def get_ip_pool(self):
+        return self.ip_pool
 
     def validate(self):
         if not self.subject or not self.from_addr:
