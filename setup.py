@@ -12,7 +12,7 @@ setup(
     packages=[str('espwrap'), str('espwrap.adaptors')],
     platforms='any',
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov'],
     extras_require={
         'mandrill': ['mandrill>=1.0.57'],
         'sendgrid': [
