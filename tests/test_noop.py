@@ -14,11 +14,11 @@ if sys.version_info < (3,):
 
 
 def generate_recipients(count=10):
-        for x in range(count):
-            yield {
-                'name': 'Test Recip {}'.format(x),
-                'email': 'test+{}@something.com'.format(x),
-            }
+    for x in range(count):
+        yield {
+            'name': 'Test Recip {}'.format(x),
+            'email': 'test+{}@something.com'.format(x),
+        }
 
 
 def test_batch():
