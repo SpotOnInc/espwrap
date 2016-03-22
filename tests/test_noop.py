@@ -17,7 +17,7 @@ def test_instantiatable():
     assert NoopMassEmail()
 
 
-def test_can_add_single_recipient():
+def test_add_recipient():
     me = NoopMassEmail()
 
     me.add_recipient(
@@ -32,13 +32,19 @@ def test_can_add_single_recipient():
     assert recips[0].get('merge_vars') is not None
 
 
-def test_can_add_list_recipients():
+def test_add_recipients():
+    '''
+    Test that a list of recipients can be added in bulk, assigning a default
+    empty dict of merge vars when not provided
+    '''
+
     me = NoopMassEmail()
 
     me.add_recipients([
         {
             'email': 'test+tester@something.com',
             'name': 'Some test dude',
+            'merge_vars': {'SOMETHING': 'test'},
         },
         {
             'email': 'test1+tester1@something.com',
@@ -50,24 +56,9 @@ def test_can_add_list_recipients():
 
     assert len(recips) == 2
 
-
-def test_recipients_get_default_empty_merge_vars():
-    me = NoopMassEmail()
-
-    me.add_recipients([
-        {
-            'email': 'test+tester@something.com',
-            'name': 'Some test dude',
-        },
-        {
-            'email': 'test1+tester1@something.com',
-            'name': 'Some test dude',
-        },
-    ])
-
     recips = [x for x in me.get_recipients() if x.get('merge_vars') == {}]
 
-    assert len(recips) == 2
+    assert len(recips) == 1
 
 
 def test_can_lazily_add_recipients():
@@ -93,7 +84,33 @@ def test_can_lazily_add_recipients():
     assert len(recips_list) == gen_count
 
 
-def test_body_defaults_to_html():
+def test_no_tags_by_default():
+    me = NoopMassEmail()
+
+    assert len(me.get_tags()) == 0
+
+
+def test_add_tags():
+    me = NoopMassEmail()
+
+    me.add_tags('test', 'mode')
+
+    assert len(me.get_tags()) == 2
+
+
+def test_clear_tags():
+    me = NoopMassEmail()
+
+    me.add_tags('test', 'mode')
+
+    assert len(me.get_tags()) == 2
+
+    me.clear_tags()
+
+    assert len(me.get_tags()) == 0
+
+
+def test_set_body_and_get_body():
     me = NoopMassEmail()
     msg = '<h1>Hello!</h1>'
 
@@ -108,7 +125,11 @@ def test_body_defaults_to_html():
     assert 'mimetype' in str(e.value)
 
 
-def test_plain_text_body_independent():
+def test_set_body_with_mimetype():
+    '''
+    Test that setting a body will set the default (HTML), but this mimetype
+    can be overridden with an argument (for, ie. plain text)
+    '''
     me = NoopMassEmail()
     msg_text = 'Tester Test'
     msg_html = '<h1>Tester Test HTML</h1>'
@@ -118,29 +139,3 @@ def test_plain_text_body_independent():
 
     assert me.get_body(mimetype=MIMETYPE_HTML) == msg_html
     assert me.get_body(mimetype=MIMETYPE_TEXT) == msg_text
-
-
-def test_starts_with_no_tags():
-    me = NoopMassEmail()
-
-    assert len(me.get_tags()) == 0
-
-
-def test_can_add_tags():
-    me = NoopMassEmail()
-
-    me.add_tags('test', 'mode')
-
-    assert len(me.get_tags()) == 2
-
-
-def test_can_clear_all_tags():
-    me = NoopMassEmail()
-
-    me.add_tags('test', 'mode')
-
-    assert len(me.get_tags()) == 2
-
-    me.clear_tags()
-
-    assert len(me.get_tags()) == 0
