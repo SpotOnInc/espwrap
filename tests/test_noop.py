@@ -84,6 +84,32 @@ def test_can_lazily_add_recipients():
     assert len(recips_list) == gen_count
 
 
+def test_no_global_merge_vars_by_default():
+    me = NoopMassEmail()
+
+    assert not me.get_global_merge_vars()
+
+
+def test_add_global_merge_vars():
+    me = NoopMassEmail()
+
+    me.add_global_merge_vars(FIRST='server', SECOND_ONE_IS_BEST='client')
+
+    assert len(me.get_global_merge_vars().items()) == 2
+    assert 'FIRST' in me.get_global_merge_vars().keys()
+    assert 'SECOND_ONE_IS_BEST' in me.get_global_merge_vars().keys()
+
+
+def test_clear_global_merge_vars():
+    me = NoopMassEmail()
+
+    me.add_global_merge_vars(FIRST='server', SECOND='client')
+
+    me.clear_global_merge_vars()
+
+    assert not me.get_global_merge_vars()
+
+
 def test_no_tags_by_default():
     me = NoopMassEmail()
 
