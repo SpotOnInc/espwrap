@@ -33,13 +33,15 @@ class MassEmail(object):
         raise Exception('Send method must be defined on a per-ESP basis')
 
     def __init__(self, subject='', from_addr='', text='', html='',
-                 send_partition=500, reply_to_addr='', webhook_data=None,
-                 ip_pool=None, track_clicks=False, track_opens=False):
+                 send_partition=500, reply_to_addr='', template_name=None,
+                 webhook_data=None, ip_pool=None, track_clicks=False,
+                 track_opens=False):
         self.recipients = []
         self.global_merge_vars = {}
         self.tags = []
         self.webhook_data = webhook_data
         self.ip_pool = ip_pool
+        self.template_name = template_name
 
         self.subject = subject
         self.from_addr = from_addr
@@ -199,6 +201,12 @@ class MassEmail(object):
 
     def get_ip_pool(self):
         return self.ip_pool
+
+    def get_template_name(self):
+        return self.template_name
+
+    def set_template_name(self, template_name):
+        self.template_name = template_name
 
     def validate(self):
         if not self.subject or not self.from_addr:

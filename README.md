@@ -44,9 +44,8 @@ support does *not* indicate that ESPwrap supports all functionality of the ESP,
 but rather that all "common denominator" functionality which ESPwrap provides,
 is available in that ESP's subclass.
 
-- SendGrid (Full as of 21 March 2016)
-- Mandrill (Partial as of 22 March 2016)
-    * IP Pools unsupported
+- SendGrid (Full)
+- Mandrill (Full)
 
 Don't see your ESP in the list? It's easy to write an adaptor! Perhaps check
 out the Mandrill adaptor and write your own based on it. Pull requests are
@@ -275,10 +274,16 @@ Support: Mandrill, SendGrid
 
 
 ### `set_ip_pool(value)` and `get_ip_pool()`
-Support: SendGrid
+Support: Mandrill, SendGrid
 
-> Sets/gets the IP Pool identifier the email should use. Currently only
-> supported in SendGrid, which uses string-based identifiers.
+> Sets/gets the IP Pool identifier the email should use.
+
+
+### `set_template_name(value)` and `get_template_name()`
+Support: Mandrill, SendGrid
+
+> Sets/gets the ESP-hosted template name to use with this message.
+> Falsy values indicate no ESP template.
 
 
 ### `validate()`

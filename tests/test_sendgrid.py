@@ -52,6 +52,7 @@ def test_add_tags():
 def test_prepare_payload():
     me = SendGridMassEmail(API_KEY)
 
+    template_name = 'test template'
     ip_pool = 'testPool'
     company_name = 'UnitTest Spam Corp the Second'
     tags = ['unit', 'test', 'for', 'the', 'win']
@@ -86,6 +87,7 @@ def test_prepare_payload():
 
     me.set_variable_delimiters('*|', '|*')
     me.set_ip_pool(ip_pool)
+    me.set_template_name(template_name)
 
     me.enable_click_tracking()
     me.enable_open_tracking()
@@ -124,3 +126,6 @@ def test_prepare_payload():
 
     assert payload.get('ip_pool') == ip_pool
     assert payload.get('unique_args') == webhook_data
+
+    assert payload.get('filters', {}).get('templates', {}).get('settings', {}).get('enabled') == 1
+    assert payload.get('filters', {}).get('templates', {}).get('settings', {}).get('template_id') == template_name

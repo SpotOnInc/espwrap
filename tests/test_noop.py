@@ -277,6 +277,15 @@ def test_ip_pool():
     assert me.get_ip_pool() == pool
 
 
+def test_template_name():
+    me = NoopMassEmail()
+    template_name = 'test template'
+
+    me.set_template_name(template_name)
+
+    assert me.get_template_name() == template_name
+
+
 def test_send():
     me = NoopMassEmail()
 

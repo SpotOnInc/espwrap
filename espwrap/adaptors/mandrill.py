@@ -71,7 +71,20 @@ class MandrillMassEmail(MassEmail):
     def send(self):
         self.validate()
 
+        kwargs = {
+            'async': True
+        }
+
+        if self.ip_pool:
+            kwargs['ip_pool'] = self.ip_pool
+
+        if self.template_name:
+            mandrill_send = self.client.messages.send_template
+            kwargs['template_name'] = self.template_name
+        else:
+            mandrill_send = self.client.messages.send
+
         grouped_recipients = batch(list(self.recipients), self.partition)
 
         for grp in grouped_recipients:
-            self.client.messages.send(async=True, message=self._prepare_payload(grp))
+            mandrill_send(message=self._prepare_payload(grp), **kwargs)

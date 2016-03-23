@@ -82,6 +82,10 @@ class SendGridMassEmail(MassEmail):
         if self.ip_pool:
             payload.set_ip_pool(self.ip_pool)
 
+        if self.template_name:
+            payload.add_filter('templates', 'enabled', 1)
+            payload.add_filter('templates', 'template_id', self.template_name)
+
         payload.set_substitutions(merge_vars)
 
         payload.add_filter('clicktrack', 'enable', self.track_clicks and 1 or 0)
