@@ -139,7 +139,7 @@ Support: Mandrill, SendGrid
 > which are referenced in the eventual Substitutions array.
 
 ```python
-me = NoopMassEmail
+me = NoopMassEmail()
 
 me.add_global_merge_vars(COMPANY_NAME='SpotOn', COPYRIGHT='2016')
 ```
@@ -159,13 +159,149 @@ Support: Mandrill, SendGrid
 > variables as a dictionary.
 
 ```python
-me = NoopMassEmail
+me = NoopMassEmail()
 
 me.add_global_merge_vars(COMPANY_NAME='SpotOn', COPYRIGHT='2016')
 
 me.get_global_merge_vars()
 # => { 'COMPANY_NAME': 'SpotOn', 'COPYRIGHT': '2016' }
 ```
+
+
+### `add_tags(tag1, tag2, ...)`
+Support: Mandrill, SendGrid
+
+> Add a tag to the email. These are used in varying ways, check with your ESP
+> for details on how many they'll keep track of.
+
+> SendGrid limitation: only 10 tags may be added to an email.
+
+```python
+me = NoopMassEmail()
+
+tags = ['something', 'and', 'something', 'else']
+
+me.add_tags(*tags)
+
+me.add_tags('OneMoreForGoodMeasure')
+```
+
+
+### `get_tags()`
+Support: Mandrill, SendGrid
+
+> Return the list of tags currently assigned to the email.
+
+
+### `clear_tags()`
+Support: Mandrill, SendGrid
+
+> Reset the internal tags collection to an empty `list`
+
+
+### `set_body(content, mimetype='text/html')`
+Support: Mandrill, SendGrid
+
+> Sets the body content of the email, segregated by mimetype, defaulting to
+> HTML. Presently, only plain text and HTML emails are supported. You may wish
+> to use the `MIMETYPE_PLAIN` and `MIMETYPE_HTML` constants defined in
+> `espwrap.base` here.
+
+```python
+me = NoopMassEmail()
+msg_text = 'Tester Test'
+msg_html = '<h1>Tester Test HTML</h1>'
+
+me.set_body(msg_html)
+me.set_body(msg_text, mimetype=MIMETYPE_TEXT)
+```
+
+
+### `get_body(mimetype=None)`
+Support: Mandrill, SendGrid
+
+> Returns the current body content, either as a dictionary (keyed on mimetype),
+> or as a string if a valid `mimetype` is passed. If an unset `mimetype`
+> is passed, an `AttributeError` will be raised.
+
+
+### `set_from_addr(from_addr)` and `get_from_addr()`
+Support: Mandrill, SendGrid
+
+> Sets or gets the email address the email will be from. **REQUIRED** before
+> emails can be sent through Mandrill or SendGrid adaptors.
+
+
+### `set_reply_to_addr(reply_to_addr)` and `get_reply_to_addr()`
+Support: Mandrill, SendGrid
+
+> Sets or gets a reply-to address for the email. Optional, and will default to
+> `None` and not be set in the outgoing email.
+
+
+### `set_subject(subject)` and `get_subject()`
+Support: Mandrill, SendGrid
+
+> Sets or gets the subject for the email. **REQUIRED** before
+> emails can be sent through Mandrill or SendGrid adaptors.
+
+
+### `set_webhook_data(data)` and `get_webhook_data()`
+Support: Mandrill, SendGrid
+
+> Sets or gets unique webhook-related data for the email. ESPs will handle this
+> in their own unique ways internally, please see their documentation for what
+> format this should be in.
+
+
+### `enable_click_tracking()`, `disable_click_tracking()`, and `get_click_tracking_status()`
+Support: Mandrill, SendGrid
+
+> Enables, disables, or reports status of click tracking for the email.
+
+
+### `enable_open_tracking()`, `disable_open_tracking()`, and `get_open_tracking_status()`
+Support: Mandrill, SendGrid
+
+> Enables, disables, or reports status of open tracking for the email.
+
+
+### `set_importance(important)` and `get_importance()`
+Support: Mandrill, SendGrid
+
+> Sets/gets (through a cast boolean) whether an email should have standard
+> SMTP priority headers. Not all email servers or clients can handle this info,
+> in which cases it may be silently ignored.
+
+
+### `set_ip_pool(value)` and `get_ip_pool()`
+Support: SendGrid
+
+> Sets/gets the IP Pool identifier the email should use. Currently only
+> supported in SendGrid, which uses string-based identifiers.
+
+
+### `validate()`
+Support: Mandrill, SendGrid
+
+> Ensure that both a subject and from address have been set on the email.
+> Called internally to sanity-check emails before producing payloads or sending.
+> Will raise an `Exception` if these criteria are not met.
+
+
+### `set_variable_delimiters(start='-', end='-')`
+Support: SendGrid
+
+> Define the delimiters to use for merge variables. Defaults to SendGrid's
+> default hyphens, but can easily be swapped out with, ex. Mandrill-style
+> delimiters.
+
+
+### `get_variable_delimiters(as_dict=False)`
+Support: SendGrid
+
+> Returns the currently set variable delimiters, either as a tuple (the default),
+> or as a dictionary keyed on `start` and `end`.
 
 
 ## ESPwrap is open-source!
