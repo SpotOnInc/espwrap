@@ -291,3 +291,18 @@ def test_send():
 
     with pytest.raises(NotImplementedError):
         me.send()
+
+
+def test_delimiters():
+    '''
+    By default, we assume the ESP cannot hot-swap variable delimiters the way
+    SendGrid can, so we raise NotImplementedError and call it a day.
+    '''
+
+    me = NoopMassEmail()
+
+    with pytest.raises(NotImplementedError):
+        me.set_variable_delimiters(start='*|', end='|*')
+
+    with pytest.raises(NotImplementedError):
+        me.get_variable_delimiters()
