@@ -37,10 +37,9 @@ email.send()
 ## Currently Supported ESP Backends
 Full/partial support is relative to the overall ESPwrap feature set. "Full" support does *not* indicate that ESPwrap supports all functionality of the ESP, but rather that all "common denominator" functionality which ESPwrap provides, is available in that ESP's subclass.
 
-- Mandrill (Partial as of 22 March 2016)
-    * Webhooks unsupported
-    * IP Pools unsupported
 - SendGrid (Full as of 21 March 2016)
+- Mandrill (Partial as of 22 March 2016)
+    * IP Pools unsupported
 
 Don't see your ESP in the list? It's easy to write an adaptor! Perhaps check out the Mandrill adaptor and write your own based on it. Pull requests are always welcome!
 
