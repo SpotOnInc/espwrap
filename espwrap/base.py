@@ -208,10 +208,10 @@ class MassEmail(object):
     def set_template_name(self, template_name):
         self.template_name = template_name
 
-    def set_variable_delimiters(self, *args, **kwargs):
+    def set_variable_delimiters(self, start='-', end='-'):
         raise NotImplementedError('Your ESP evidently does not support variable delimiters')
 
-    def get_variable_delimiters(self, *args, **kwargs):
+    def get_variable_delimiters(self, as_dict=False):
         raise NotImplementedError('Your ESP evidently does not support variable delimiters')
 
     def validate(self):
