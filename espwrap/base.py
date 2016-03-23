@@ -75,8 +75,7 @@ class MassEmail(object):
         self.recipients = itertools.chain(self.recipients, (recip,))
 
     def add_recipients(self, recipients):
-        for recip in recipients:
-            self.add_recipient(recip)
+        self.recipients = itertools.chain(self.recipients, recipients)
 
     def clear_recipients(self):
         self.recipients = []
@@ -90,6 +89,10 @@ class MassEmail(object):
         '''
 
         self.recipients = list(self.recipients)
+
+        for recip in self.recipients:
+            if recip.get('merge_vars') is None:
+                recip['merge_vars'] = {}
 
         return self.recipients
 
