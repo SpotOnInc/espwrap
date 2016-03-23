@@ -20,6 +20,7 @@ setup(
     download_url = 'https://github.com/SpotOnInc/espwrap/{0}'.format(version),
     license='MIT',
     author='SpotOn',
+    author_email='josh@spoton.com',
     packages=[str('espwrap'), str('espwrap.adaptors')],
     platforms='any',
     setup_requires=['pytest-runner'],
