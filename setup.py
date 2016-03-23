@@ -17,6 +17,7 @@ setup(
     version=version,
     description='A light wrapper around email service providers',
     url='https://github.com/SpotOnInc/espwrap',
+    download_url = 'https://github.com/SpotOnInc/espwraptarball/{0}'.format(version),
     license='MIT',
     author='SpotOn',
     packages=[str('espwrap'), str('espwrap.adaptors')],
