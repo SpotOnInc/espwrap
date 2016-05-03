@@ -102,8 +102,8 @@ def test_prepare_payload():
     assert payload.get('filters', {}).get('clicktrack', {}).get('settings', {}).get('enable') == 1
     assert payload.get('filters', {}).get('opentrack', {}).get('settings', {}).get('enable') == 1
 
-    assert 'Josh <spam@spam.com>' in payload.get('to')
-    assert 'Jim <spam2@spam.com>' in payload.get('to')
+    assert '"Josh" <spam@spam.com>' in payload.get('to')
+    assert '"Jim" <spam2@spam.com>' in payload.get('to')
 
     assert payload.get('section') is not None
     assert len(payload.get('section').keys()) == 1
