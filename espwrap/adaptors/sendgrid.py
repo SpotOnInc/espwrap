@@ -101,21 +101,33 @@ class SendGridMassEmail(MassEmail):
         grouped_recipients = batch(list(self.recipients), self.partition)
 
         for grp in grouped_recipients:
-            msg = sendgrid.Mail(smtpapi=self._prepare_payload(grp))
+            seen = set()
+            to_send = [[]]
 
-            msg.set_from(self.from_addr)
-            msg.set_subject(self.subject)
+            for recip in grp:
+                email = recip.get('email')
+                if email in seen:
+                    to_send.append([recip])
+                else:
+                    seen.add(email)
+                    to_send[0].append(recip)
 
-            if self.reply_to_addr:
-                msg.set_replyto(self.reply_to_addr)
+            for subgrp in to_send:
+                msg = sendgrid.Mail(smtpapi=self._prepare_payload(subgrp))
 
-            if self.body[MIMETYPE_TEXT]:
-                msg.set_text(self.body[MIMETYPE_TEXT])
+                msg.set_from(self.from_addr)
+                msg.set_subject(self.subject)
 
-            if self.body[MIMETYPE_HTML]:
-                msg.set_html(self.body[MIMETYPE_HTML])
+                if self.reply_to_addr:
+                    msg.set_replyto(self.reply_to_addr)
 
-            if self.important:
-                msg.set_headers(Priority='Urgent', Importance='high')
+                if self.body[MIMETYPE_TEXT]:
+                    msg.set_text(self.body[MIMETYPE_TEXT])
 
-            self.client.send(msg)
+                if self.body[MIMETYPE_HTML]:
+                    msg.set_html(self.body[MIMETYPE_HTML])
+
+                if self.important:
+                    msg.set_headers(Priority='Urgent', Importance='high')
+
+                self.client.send(msg)
