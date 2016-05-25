@@ -1,5 +1,6 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
+import re
 import sys
 
 import sendgrid
@@ -106,10 +107,12 @@ class SendGridMassEmail(MassEmail):
 
             for recip in grp:
                 email = recip.get('email')
-                if email in seen:
+                email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
+
+                if email_no_alias in seen:
                     to_send.append([recip])
                 else:
-                    seen.add(email)
+                    seen.add(email_no_alias)
                     to_send[0].append(recip)
 
             for subgrp in to_send:
