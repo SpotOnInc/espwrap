@@ -8,12 +8,29 @@ import sys
 import pytest
 
 from espwrap.base import MIMETYPE_TEXT
-from espwrap.adaptors.sendgrid import SendGridMassEmail
+from espwrap.adaptors.sendgrid import SendGridMassEmail, breakdown_recipients
 
 if sys.version_info < (3,):
     range = xrange
 
 API_KEY = 'unit_test'
+
+
+def test_breakdown_recipients():
+    me = SendGridMassEmail(API_KEY)
+
+    # This function will split straight up duplicates
+    me.add_recipient(name='Test', email='test@test.com')
+    me.add_recipient(name='Test', email='test@test.com')
+
+    # This function will split aliases we've already seen
+    # the base of
+    me.add_recipient(name='Test', email='test+1@test.com')
+
+    broken = breakdown_recipients(me.get_recipients())
+
+    # So it should send as three separate batches
+    assert len(broken) == 3
 
 
 def test_delimiters():
