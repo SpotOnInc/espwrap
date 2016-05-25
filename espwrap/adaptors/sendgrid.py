@@ -1,5 +1,6 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
+import re
 import sys
 
 import sendgrid
@@ -10,6 +11,23 @@ from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 
 if sys.version_info < (3,):
     range = xrange
+
+
+def breakdown_recipients(grp):
+    seen = set()
+    to_send = [[]]
+
+    for recip in grp:
+        email = recip.get('email')
+        email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
+
+        if email_no_alias in seen:
+            to_send.append([recip])
+        else:
+            seen.add(email_no_alias)
+            to_send[0].append(recip)
+
+    return to_send
 
 
 class SendGridMassEmail(MassEmail):
@@ -101,16 +119,7 @@ class SendGridMassEmail(MassEmail):
         grouped_recipients = batch(list(self.recipients), self.partition)
 
         for grp in grouped_recipients:
-            seen = set()
-            to_send = [[]]
-
-            for recip in grp:
-                email = recip.get('email')
-                if email in seen:
-                    to_send.append([recip])
-                else:
-                    seen.add(email)
-                    to_send[0].append(recip)
+            to_send = breakdown_recipients(grp)
 
             for subgrp in to_send:
                 msg = sendgrid.Mail(smtpapi=self._prepare_payload(subgrp))
