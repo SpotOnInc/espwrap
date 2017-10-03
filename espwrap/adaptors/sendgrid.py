@@ -137,6 +137,6 @@ class SendGridMassEmail(MassEmail):
                     msg.set_html(self.body[MIMETYPE_HTML])
 
                 if self.important:
-                    msg.set_headers(Priority='Urgent', Importance='high')
+                    msg.set_headers({'Priority': 'Urgent', 'Importance': 'high'})
 
                 self.client.send(msg)
