@@ -59,7 +59,7 @@ class MassEmail(object):
             MIMETYPE_HTML: html,
         }
 
-        # key is the filename, value is str or file path.
+        # key is the filename, value is file object or file path.
         self.attachments = {}
 
     def add_recipient(self, email, name='', merge_vars=None):
