@@ -59,6 +59,9 @@ class MassEmail(object):
             MIMETYPE_HTML: html,
         }
 
+        # key is the filename, value is str or file path.
+        self.attachments = {}
+
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, collections.Mapping):
@@ -217,3 +220,6 @@ class MassEmail(object):
     def validate(self):
         if not self.subject or not self.from_addr:
             raise Exception('from address and subject are required!')
+
+    def add_attachment(self, file_name, file_or_path):
+        self.attachments[file_name] = file_or_path

@@ -309,6 +309,13 @@ Support: SendGrid
 > or as a dictionary keyed on `start` and `end`.
 
 
+### `add_attachment(file_name, file_obj_or_path)`
+Support: SendGrid
+
+> Adds an attachment. The file_obj_or_path is either a path or a
+> file object returned by open.
+
+
 ## ESPwrap is open-source!
 ```
 The MIT License (MIT)

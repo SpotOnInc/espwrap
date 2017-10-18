@@ -139,4 +139,8 @@ class SendGridMassEmail(MassEmail):
                 if self.important:
                     msg.set_headers({'Priority': 'Urgent', 'Importance': 'high'})
 
+                if self.attachments:
+                    for file_name, file_path_or_string in self.attachments.iteritems():
+                        msg.add_attachment(file_name, file_path_or_string)
+
                 self.client.send(msg)
