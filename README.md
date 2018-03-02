@@ -9,9 +9,9 @@ Supported on, and [tested against](https://travis-ci.org/SpotOnInc/espwrap),
 the following versions of Python (or see `.travis.yml`):
 
 - 2.7
-- 3.3
 - 3.4
 - 3.5
+- 3.6
 
 We also test against nightly, but may prioritize bugs found on this version of
 Python lower than others.
