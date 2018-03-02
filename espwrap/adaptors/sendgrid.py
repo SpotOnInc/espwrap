@@ -143,4 +143,10 @@ class SendGridMassEmail(MassEmail):
                     for file_name, file_path_or_string in self.attachments.iteritems():
                         msg.add_attachment(file_name, file_path_or_string)
 
+                for email in self.cc_list:
+                    msg.add_cc(email)
+
+                for email in self.bcc_list:
+                    msg.add_bcc(email)
+
                 self.client.send(msg)

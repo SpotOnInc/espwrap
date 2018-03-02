@@ -62,6 +62,9 @@ class MassEmail(object):
         # key is the filename, value is file object or file path.
         self.attachments = {}
 
+        self.bcc_list = []
+        self.cc_list = []
+
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, collections.Mapping):
@@ -223,3 +226,9 @@ class MassEmail(object):
 
     def add_attachment(self, file_name, file_or_path):
         self.attachments[file_name] = file_or_path
+
+    def add_bcc(self, email):
+        self.bcc_list.append(email)
+
+    def add_cc(self, email):
+        self.cc_list.append(email)

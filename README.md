@@ -316,6 +316,19 @@ Support: SendGrid
 > file object returned by open.
 
 
+### `add_bcc(email)`
+Support: SendGrid
+
+> Adds blind carbon copy.
+
+
+### `add_cc(email)`
+Support: SendGrid
+
+> Adds carbon copy.
+
+
+
 ## ESPwrap is open-source!
 ```
 The MIT License (MIT)
