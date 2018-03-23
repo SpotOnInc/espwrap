@@ -64,6 +64,7 @@ class MassEmail(object):
 
         self.bcc_list = []
         self.cc_list = []
+        self.send_at = None
 
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
@@ -232,3 +233,9 @@ class MassEmail(object):
 
     def add_cc(self, email):
         self.cc_list.append(email)
+
+    def set_send_at(self, unix_time):
+        """
+        The epoch time as an int. For example: int(time.time()). Sendgrid allows up to 72 hours.
+        """
+        self.send_at = unix_time

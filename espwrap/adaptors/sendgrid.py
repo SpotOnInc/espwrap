@@ -143,6 +143,9 @@ class SendGridMassEmail(MassEmail):
                     for file_name, file_path_or_string in self.attachments.iteritems():
                         msg.add_attachment(file_name, file_path_or_string)
 
+                if self.send_at:
+                    msg.smtpapi.set_send_at(self.send_at)
+
                 for email in self.cc_list:
                     msg.add_cc(email)
 
