@@ -327,7 +327,10 @@ Support: SendGrid
 
 > Adds carbon copy.
 
+### `set_send_at(email)`
+Support: SendGrid
 
+> Schedules email up to 72 hours in advance.
 
 ## ESPwrap is open-source!
 ```
