@@ -7,17 +7,11 @@ import sys
 
 import sendgrid
 from sendgrid.helpers.mail import (
-    Mail, From, To, Cc, Bcc, Subject, Substitution, Header,
+    Mail, From, To, Cc, Bcc, Subject, Substitution,
     CustomArg, SendAt, Content, MimeType, Attachment, FileName,
-    FileContent, FileType, Disposition, ContentId, TemplateId,
-    Section, ReplyTo, Category, BatchId, Asm, GroupId, GroupsToDisplay,
-    IpPoolName, MailSettings, BccSettings, BccSettingsEmail,
-    BypassListManagement, FooterSettings, FooterText,
-    FooterHtml, SandBoxMode, SpamCheck, SpamThreshold, SpamUrl,
-    TrackingSettings, ClickTracking, SubscriptionTracking,
-    SubscriptionText, SubscriptionHtml, SubscriptionSubstitutionTag,
-    OpenTracking, OpenTrackingSubstitutionTag, Ganalytics,
-    UtmSource, UtmMedium, UtmTerm, UtmContent, UtmCampaign)
+    FileContent, ReplyTo, Category, IpPoolName,
+    TrackingSettings, ClickTracking,
+    OpenTracking, OpenTrackingSubstitutionTag)
 
 from python_http_client import exceptions
 
@@ -112,7 +106,7 @@ class SendGridMassEmail(MassEmail):
 
             #IP Pool
             if self.ip_pool:
-                message.ip_payload['ip_pool'] = self.ip_pool
+                message.ip_pool_name = IpPoolName(self.ip_pool)
 
             #CC
             if self.cc_list:
