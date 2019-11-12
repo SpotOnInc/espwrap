@@ -2,7 +2,8 @@ from __future__ import print_function, division, unicode_literals, absolute_impo
 
 import base64
 import json
-import re
+import logging
+import os
 import sys
 
 import sendgrid
@@ -15,15 +16,10 @@ from sendgrid.helpers.mail import (
 
 from python_http_client import exceptions
 
-
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 
+from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
-if sys.version_info < (3,):
-    range = xrange
-
-import os
-import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
@@ -32,22 +28,24 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+# if sys.version_info < (3,):
+#     range = xrange
 
-def breakdown_recipients(grp):
-    seen = set()
-    to_send = [[]]
+# def breakdown_recipients(grp):
+#     seen = set()
+#     to_send = [[]]
 
-    for recip in grp:
-        email = recip.get('email')
-        email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
+#     for recip in grp:
+#         email = recip.get('email')
+#         email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
 
-        if email_no_alias in seen:
-            to_send.append([recip])
-        else:
-            seen.add(email_no_alias)
-            to_send[0].append(recip)
+#         if email_no_alias in seen:
+#             to_send.append([recip])
+#         else:
+#             seen.add(email_no_alias)
+#             to_send[0].append(recip)
 
-    return to_send
+#     return to_send
 
 
 class SendGridMassEmail(MassEmail):
@@ -58,6 +56,8 @@ class SendGridMassEmail(MassEmail):
         self.client = sendgrid.SendGridAPIClient(api_key)
 
         self.delimiters = ('-', '-')
+
+        self.verbose = False
 
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
@@ -177,25 +177,22 @@ class SendGridMassEmail(MassEmail):
             
             #Personalizations (DO THIS LAST)
             for subgrp in to_send:
-                p=0
-                for recip in subgrp:
+                for p, recip in enumerate(subgrp):
                     message.from_email = From(self.from_addr)
                     message.to = To(recip['email'], p=p)
                     message.subject = Subject(self.subject)
-
                     for key, val in recip['merge_vars'].items():
                         new_key = '{1}{0}{2}'.format(key, *self.delimiters)
                         message.substitution = Substitution(new_key, val, p=p)
-                    p+=1
 
             try:
                 response = self.client.send(message)
-                print("status code")
-                print(response.status_code)
-                print("body")
-                print(response.body)
-                print("headers")
-                print(response.headers)
+                response_status_code = response.status_code
+                response_body = response.body
+                response_headers = response.headers
+                if self.verbose:
+                    print(reposne_status_code)
+                    print(response_body)
+                    print(response_headers)
             except exceptions.BadRequestsError as e:
-                print(e.body)
-                exit()
+                raise

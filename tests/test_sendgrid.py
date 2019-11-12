@@ -8,7 +8,8 @@ import sys
 import pytest
 
 from espwrap.base import MIMETYPE_TEXT
-from espwrap.adaptors.sendgrid import SendGridMassEmail, breakdown_recipients
+from espwrap.adaptors.sendgrid import SendGridMassEmail
+from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
 if sys.version_info < (3,):
     range = xrange
