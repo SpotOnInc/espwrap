@@ -12,7 +12,8 @@ from sendgrid.helpers.mail import (
     CustomArg, SendAt, Content, MimeType, Attachment, FileName,
     FileContent, ReplyTo, Category, IpPoolName,
     TrackingSettings, ClickTracking,
-    OpenTracking, OpenTrackingSubstitutionTag)
+    OpenTracking, OpenTrackingSubstitutionTag,
+    Section)
 
 from python_http_client import exceptions
 
@@ -22,30 +23,11 @@ from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-# if sys.version_info < (3,):
-#     range = xrange
-
-# def breakdown_recipients(grp):
-#     seen = set()
-#     to_send = [[]]
-
-#     for recip in grp:
-#         email = recip.get('email')
-#         email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
-
-#         if email_no_alias in seen:
-#             to_send.append([recip])
-#         else:
-#             seen.add(email_no_alias)
-#             to_send[0].append(recip)
-
-#     return to_send
+#handler = logging.StreamHandler(sys.stdout)
+#handler.setLevel(logging.INFO)
+#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#handler.setFormatter(formatter)
+#logger.addHandler(handler)
 
 
 class SendGridMassEmail(MassEmail):
@@ -57,7 +39,7 @@ class SendGridMassEmail(MassEmail):
 
         self.delimiters = ('-', '-')
 
-        self.verbose = False
+        self.verbose = True #False
 
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
@@ -86,113 +68,141 @@ class SendGridMassEmail(MassEmail):
         
         grouped_recipients = batch(list(self.recipients), self.partition)
         
+        #DEBUG
+        logger.info("grouped_recipients >>>>>>>>>>")
+        logger.info(grouped_recipients)
+
         for grp in grouped_recipients:
             
+            #DEBUG
+            logger.info("grp >>>>>>>>>>")
+            logger.info(grp)
+
             to_send = breakdown_recipients(grp)
+
+            #DEBUG
+            logger.info("to_send >>>>>>>>>>")
+            logger.info(to_send)
 
             message = Mail()
 
-            #Reply
-            if self.reply_to_addr:
-                message.reply_to = ReplyTo(self.reply_to_addr)
-
-            #Send At
-            if self.send_at:
-                message.send_at = SendAt(self.send_at)
-
-            #Category
-            if self.tags:
-                message.Category = Category(self.tags)
-
-            #IP Pool
-            if self.ip_pool:
-                message.ip_pool_name = IpPoolName(self.ip_pool)
-
-            #CC
-            if self.cc_list:
-                list_cc = []
-                for email in self.cc_list:
-                    list_cc.append(Cc(email))
-                message.cc = list_cc
-
-            #BCC
-            if self.bcc_list:
-                list_bcc = []
-                for email in self.bcc_list:
-                    list_bcc.append(Bcc(email))
-                message.bcc = list_bcc
-        
-            #Global Subs
-            for key, val in self.global_merge_vars.items():
-                new_key = '{1}{0}{2}'.format(key, *self.delimiters)
-                message.substitution = Substitution(new_key, val)
-
-            #Content (Text)
-            if self.body[MIMETYPE_TEXT]:
-                content = Content(
-                    MimeType.text,
-                    self.body[MIMETYPE_TEXT]
-                )
-                message.content = content
-
-            #Content (Html)
-            if self.body[MIMETYPE_HTML]:
-                content = Content(
-                    MimeType.html,
-                    self.body[MIMETYPE_HTML]
-                )
-                message.content = content
-                
-            #Attachment
-            if self.attachments:
-                for file_name, file_path_or_string in self.attachments.iteritems():
-                    attachment = Attachment()
-                    encoded = base64.b64encode(str(file_path_or_string))
-                    attachment.file_content = FileContent(encoded)
-                    attachment.file_name = FileName(file_name)
-                message.attachment = attachment
-
-            #Webhook Data
-            if self.webhook_data:
-                for key, val in self.webhook_data.items():
-                    message.custom_arg = CustomArg(key, val)
-            if self.template_name:
-                message.custom_arg = CustomArg('template_name', self.template_name)
-                    
-            #Tracking
-            tracking_settings = TrackingSettings()            
-            #Opens
-            if self.track_opens:
-                tracking_settings.open_tracking = OpenTracking(
-                    self.track_opens,
-                    OpenTrackingSubstitutionTag("open_tracking")
-                )
-            #Clicks
-            if self.track_clicks:
-                tracking_settings.click_tracking = ClickTracking(
-                    self.track_clicks,
-                    self.track_clicks
-                )
-            message.tracking_settings = tracking_settings
-            
-            #Personalizations (DO THIS LAST)
             for subgrp in to_send:
+
+                #DEBUG
+                logger.info("subgrp >>>>>>>>>>>>")
+                logger.info(subgrp)
+
+                #Reply
+                if self.reply_to_addr:
+                    message.reply_to = ReplyTo(self.reply_to_addr)
+
+                #Send At
+                if self.send_at:
+                    message.send_at = SendAt(self.send_at)
+
+                #Category
+                if self.tags:
+                    message.Category = Category(self.tags)
+
+                #IP Pool
+                if self.ip_pool:
+                    message.ip_pool_name = IpPoolName(self.ip_pool)
+
+                #CC
+                if self.cc_list:
+                    list_cc = []
+                    for email in self.cc_list:
+                        list_cc.append(Cc(email))
+                    message.cc = list_cc
+
+                #BCC
+                if self.bcc_list:
+                    list_bcc = []
+                    for email in self.bcc_list:
+                        list_bcc.append(Bcc(email))
+                    message.bcc = list_bcc
+
+                #Content (Text)
+                if self.body[MIMETYPE_TEXT]:
+                    content = Content(
+                        MimeType.text,
+                        self.body[MIMETYPE_TEXT]
+                    )
+                    message.content = content
+
+                #Content (Html)
+                if self.body[MIMETYPE_HTML]:
+                    content = Content(
+                        MimeType.html,
+                        self.body[MIMETYPE_HTML]
+                    )
+                    message.content = content
+
+                #Attachment
+                if self.attachments:
+                    for file_name, file_path_or_string in self.attachments.iteritems():
+                        attachment = Attachment()
+                        encoded = base64.b64encode(str(file_path_or_string))
+                        attachment.file_content = FileContent(encoded)
+                        attachment.file_name = FileName(file_name)
+                    message.attachment = attachment
+
+                #Webhook Data
+                if self.webhook_data:
+                    for key, val in self.webhook_data.items():
+                        message.custom_arg = CustomArg(key, val)
+                if self.template_name:
+                    message.custom_arg = CustomArg('template_name', self.template_name)
+
+                #Tracking
+                tracking_settings = TrackingSettings()            
+                #Opens
+                if self.track_opens:
+                    tracking_settings.open_tracking = OpenTracking(
+                        self.track_opens,
+                        OpenTrackingSubstitutionTag("open_tracking")
+                    )
+                #Clicks
+                if self.track_clicks:
+                    tracking_settings.click_tracking = ClickTracking(
+                        self.track_clicks,
+                        self.track_clicks
+                    )
+                message.tracking_settings = tracking_settings                
+                
                 for p, recip in enumerate(subgrp):
+
+                    #DEBUG
+                    logger.info("p >>>>>>")
+                    logger.info(p)
+                    logger.info("recip >>>>>>>>")
+                    logger.info(recip)
+
+                    
                     message.from_email = From(self.from_addr)
                     message.to = To(recip['email'], p=p)
                     message.subject = Subject(self.subject)
+
+                    #Global Subs
+                    for key, val in self.global_merge_vars.items():
+                        new_key = '{1}{0}{2}'.format(key, *self.delimiters)
+                        message.substitution =  Substitution(new_key, val, p=p)
+                    
+                    #Substitutions
                     for key, val in recip['merge_vars'].items():
                         new_key = '{1}{0}{2}'.format(key, *self.delimiters)
                         message.substitution = Substitution(new_key, val, p=p)
 
+
+                #DEBUG
+                logger.info("message1 >>>>>>")
+                logger.info(message)
+
             try:
                 response = self.client.send(message)
-                response_status_code = response.status_code
-                response_body = response.body
-                response_headers = response.headers
                 if self.verbose:
-                    print(reposne_status_code)
-                    print(response_body)
-                    print(response_headers)
+                    print(response.status_code)
+                    print(response.body)
+                    print(response.headers)
             except exceptions.BadRequestsError as e:
                 raise
