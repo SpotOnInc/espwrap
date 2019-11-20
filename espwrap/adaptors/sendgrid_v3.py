@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 
+from python_http_client import exceptions
 import sendgrid
 from sendgrid.helpers.mail import (
     Mail, From, To, Cc, Bcc, Subject, Substitution,
@@ -15,44 +16,40 @@ from sendgrid.helpers.mail import (
     OpenTracking, OpenTrackingSubstitutionTag,
     Section)
 
-from python_http_client import exceptions
-
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
-
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-#handler = logging.StreamHandler(sys.stdout)
-#handler.setLevel(logging.INFO)
-#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#handler.setFormatter(formatter)
-#logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class SendGridMassEmail(MassEmail):
     def __init__(self, api_key, *args, **kwargs):
-        
         super(SendGridMassEmail, self).__init__(*args, **kwargs)
 
         self.client = sendgrid.SendGridAPIClient(api_key)
 
         self.delimiters = ('-', '-')
 
-        self.verbose = True #False
-
+        
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
 
+        
     def get_variable_delimiters(self, as_dict=False):
         if as_dict:
             return {
                 'start': self.delimiters[0],
                 'end': self.delimiters[1],
             }
-
         return self.delimiters
 
+    
     def add_tags(self, *tags):
         if len(tags) > 10:
             raise Exception('Too many tags, SendGrid limits to 10 per email')
@@ -64,33 +61,19 @@ class SendGridMassEmail(MassEmail):
 
 
     def send(self):
+
+        responses=[]
+        
         self.validate()
         
         grouped_recipients = batch(list(self.recipients), self.partition)
         
-        #DEBUG
-        logger.info("grouped_recipients >>>>>>>>>>")
-        logger.info(grouped_recipients)
-
         for grp in grouped_recipients:
-            
-            #DEBUG
-            logger.info("grp >>>>>>>>>>")
-            logger.info(grp)
-
             to_send = breakdown_recipients(grp)
-
-            #DEBUG
-            logger.info("to_send >>>>>>>>>>")
-            logger.info(to_send)
 
             message = Mail()
 
             for subgrp in to_send:
-
-                #DEBUG
-                logger.info("subgrp >>>>>>>>>>>>")
-                logger.info(subgrp)
 
                 #Reply
                 if self.reply_to_addr:
@@ -103,7 +86,7 @@ class SendGridMassEmail(MassEmail):
                 #Category
                 if self.tags:
                     message.Category = Category(self.tags)
-
+                    
                 #IP Pool
                 if self.ip_pool:
                     message.ip_pool_name = IpPoolName(self.ip_pool)
@@ -151,6 +134,13 @@ class SendGridMassEmail(MassEmail):
                 if self.webhook_data:
                     for key, val in self.webhook_data.items():
                         message.custom_arg = CustomArg(key, val)
+
+                #Categories
+                if self.categories:
+                    for key, val in self.categories.items():
+                        message.custom_arg = CustomArg(key, val)
+                        
+                #Template Name
                 if self.template_name:
                     message.custom_arg = CustomArg('template_name', self.template_name)
 
@@ -171,14 +161,6 @@ class SendGridMassEmail(MassEmail):
                 message.tracking_settings = tracking_settings                
                 
                 for p, recip in enumerate(subgrp):
-
-                    #DEBUG
-                    logger.info("p >>>>>>")
-                    logger.info(p)
-                    logger.info("recip >>>>>>>>")
-                    logger.info(recip)
-
-                    
                     message.from_email = From(self.from_addr)
                     message.to = To(recip['email'], p=p)
                     message.subject = Subject(self.subject)
@@ -193,16 +175,10 @@ class SendGridMassEmail(MassEmail):
                         new_key = '{1}{0}{2}'.format(key, *self.delimiters)
                         message.substitution = Substitution(new_key, val, p=p)
 
-
-                #DEBUG
-                logger.info("message1 >>>>>>")
-                logger.info(message)
-
             try:
                 response = self.client.send(message)
-                if self.verbose:
-                    print(response.status_code)
-                    print(response.body)
-                    print(response.headers)
+                responses.append(response)
             except exceptions.BadRequestsError as e:
                 raise
+
+        return responses
