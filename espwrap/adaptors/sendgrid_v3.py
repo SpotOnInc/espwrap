@@ -1,5 +1,6 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
+import cPickle
 import base64
 import json
 import logging
@@ -135,10 +136,10 @@ class SendGridMassEmail(MassEmail):
                     for key, val in self.webhook_data.items():
                         message.custom_arg = CustomArg(key, val)
 
-                #Categories
-                if self.categories:
-                    for key, val in self.categories.items():
-                        message.custom_arg = CustomArg(key, val)
+                #Metadata
+                if hasattr(self, 'metadata'):
+                    for key, val in self.metadata.items():
+                        message.custom_arg = CustomArg(key, val)                       
                         
                 #Template Name
                 if self.template_name:
@@ -158,7 +159,7 @@ class SendGridMassEmail(MassEmail):
                         self.track_clicks,
                         self.track_clicks
                     )
-                message.tracking_settings = tracking_settings                
+                message.tracking_settings = tracking_settings
                 
                 for p, recip in enumerate(subgrp):
                     message.from_email = From(self.from_addr)
@@ -175,10 +176,31 @@ class SendGridMassEmail(MassEmail):
                         new_key = '{1}{0}{2}'.format(key, *self.delimiters)
                         message.substitution = Substitution(new_key, val, p=p)
 
+
+            #messgae data as dict for examination/validation below
+            message_dict = message.get()
+
+            #do not send if custom args >10 KB (sendgrid rule)
+            if 'custom_args' in message_dict:
+                message_custom_args = cPickle.dumps(message_dict['custom_args'])
+                custom_args_size = sys.getsizeof(message_custom_args)
+                custom_args_kb = 0.001 * float(custom_args_size)
+                if custom_args_kb > 10:
+                    raise Exception('attempted to send {} KB custom_args, not to exceed 10 KB.'.format(custom_args_kb))
+                
+            #do not send if number of recipients >1000 (sendgrid rule)
+            num_recips = len(message_dict['personalizations'])
+            if num_recips > 1000:
+                raise Exception('attempted to send to {} email addresses, not to exceed 1000 addresses.'.format(num_recips))
+            
+            """
+            send message and append response from this grp to list of returned responses for all grouped_recipients
+            """
             try:
                 response = self.client.send(message)
                 responses.append(response)
             except exceptions.BadRequestsError as e:
                 raise
 
+        #return list of all responses for each grp in grouped_recipients
         return responses
