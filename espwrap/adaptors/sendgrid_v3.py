@@ -1,6 +1,5 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
-import cPickle
 import base64
 import json
 import logging
@@ -190,7 +189,7 @@ class SendGridMassEmail(MassEmail):
 
             #do not send if custom args >10 KB (sendgrid rule)
             if 'custom_args' in message_dict:
-                message_custom_args = cPickle.dumps(message_dict['custom_args'])
+                message_custom_args = len(json.dumps(message_dict['custom_args']))
                 custom_args_size = sys.getsizeof(message_custom_args)
                 custom_args_kb = 0.001 * float(custom_args_size)
                 if custom_args_kb > 10:
