@@ -207,10 +207,8 @@ class SendGridMassEmail(MassEmail):
             try:
                 response = self.client.send(message)
                 responses.append(response)
-            except exceptions.BadRequestsError as e:
-                raise
-            except exceptions.UnauthorizedError as e:
-                pass
+            except Exception:
+                logger.exception('')
             
         #return list of all responses for each grp in grouped_recipients
         return responses
