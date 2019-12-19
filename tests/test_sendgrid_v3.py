@@ -7,15 +7,14 @@ import sys
 
 import pytest
 
-from espwrap.base import MIMETYPE_TEXT
-from espwrap.adaptors.sendgrid import SendGridMassEmail
+from espwrap.base import MIMETYPE_TEXT, batch
+from espwrap.adaptors.sendgrid_v3 import SendGridMassEmail
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
 if sys.version_info < (3,):
     range = xrange
 
 API_KEY = 'unit_test'
-
 
 def test_breakdown_recipients():
     me = SendGridMassEmail(API_KEY)
@@ -66,8 +65,7 @@ def test_add_tags():
 
     me.add_tags('tenth')
 
-
-def test_prepare_payload():
+def test_message_construction():
     me = SendGridMassEmail(API_KEY)
 
     template_name = 'test template'
@@ -104,7 +102,9 @@ def test_prepare_payload():
     me.add_global_merge_vars(COMPANY_NAME=company_name)
 
     me.set_variable_delimiters('*|', '|*')
+
     me.set_ip_pool(ip_pool)
+
     me.set_template_name(template_name)
 
     me.enable_click_tracking()
@@ -114,36 +114,41 @@ def test_prepare_payload():
 
     me.add_tags(*tags)
 
-    payload_str = me._prepare_payload().json_string()
-    payload = json.loads(payload_str)
+    me.set_subject('test subject')
 
-    assert payload.get('filters', {}).get('clicktrack', {}).get('settings', {}).get('enable') == 1
-    assert payload.get('filters', {}).get('opentrack', {}).get('settings', {}).get('enable') == 1
+    delims = me.get_variable_delimiters()
 
-    assert '"Josh" <spam@spam.com>' in payload.get('to')
-    assert '"Jim" <spam2@spam.com>' in payload.get('to')
+    grouped_recipients = batch(list(me.recipients), me.partition)
 
-    assert payload.get('section') is not None
-    assert len(payload.get('section').keys()) == 1
-    assert payload.get('section').get(':COMPANY_NAME') == company_name
+    for grp in grouped_recipients:
+        to_send = breakdown_recipients(grp) 
+    
+        message = me.message_constructor(to_send)
+        message_dict = message.get()
 
-    assert payload.get('sub') is not None
-    assert len(payload.get('sub', {}).get('*|CUSTOMER_NAME|*')) == 2
-    assert len(payload.get('sub', {}).get('*|COMPANY_NAME|*')) == 2
+        print (message_dict)
+        
+        assert set(message_dict['categories']) == set(tags)
+        assert message_dict['tracking_settings']['open_tracking']['enable'] == True
+        assert message_dict['tracking_settings']['click_tracking']['enable'] == True
 
-    sub_unique = payload.get('sub', {}).get('*|SOMETHING_UNIQUE|*')
+        assert message_dict['personalizations'][0]['to'][0]['name'] == 'Josh'
+        assert message_dict['personalizations'][0]['to'][0]['email'] == 'spam@spam.com'
+        assert message_dict['personalizations'][1]['to'][0]['name'] == 'Jim'
+        assert message_dict['personalizations'][1]['to'][0]['email'] == 'spam2@spam.com'
+        
+        company_name_key = delims[0] + 'COMPANY_NAME' + delims[1]
+        assert message_dict['personalizations'][0]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
+        assert message_dict['personalizations'][1]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
+        
+        customer_name_key = delims[0] + 'CUSTOMER_NAME' + delims[1]
+        assert message_dict['personalizations'][0]['substitutions'][customer_name_key] == 'Josh'
+        assert message_dict['personalizations'][1]['substitutions'][customer_name_key] == 'Jim'
 
-    assert len(sub_unique) == 2
-    assert sub_unique[0] is None
-    assert sub_unique[1] == 'tester'
+        something_unique_key = delims[0] + 'SOMETHING_UNIQUE' + delims[1]
+        assert something_unique_key not in message_dict['personalizations'][0]['substitutions'].keys()
+        assert message_dict['personalizations'][1]['substitutions'][something_unique_key] == 'tester'
 
-    cat_set = set(payload.get('category'))
+        assert message_dict['ip_pool_name'] == ip_pool
 
-    assert len(cat_set) == 5
-    assert len(cat_set.intersection(tags)) == 5
-
-    assert payload.get('ip_pool') == ip_pool
-    assert payload.get('unique_args') == webhook_data
-
-    assert payload.get('filters', {}).get('templates', {}).get('settings', {}).get('enabled') == 1
-    assert payload.get('filters', {}).get('templates', {}).get('settings', {}).get('template_id') == template_name
+        assert message_dict['custom_args']['template_name'] == template_name

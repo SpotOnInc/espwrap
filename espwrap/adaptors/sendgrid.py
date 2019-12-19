@@ -7,34 +7,26 @@ import sendgrid
 from smtpapi import SMTPAPIHeader
 
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
-
+from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
 if sys.version_info < (3,):
     range = xrange
-
-
-def breakdown_recipients(grp):
-    seen = set()
-    to_send = [[]]
-
-    for recip in grp:
-        email = recip.get('email')
-        email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
-
-        if email_no_alias in seen:
-            to_send.append([recip])
-        else:
-            seen.add(email_no_alias)
-            to_send[0].append(recip)
-
-    return to_send
 
 
 class SendGridMassEmail(MassEmail):
     def __init__(self, api_key, *args, **kwargs):
         super(SendGridMassEmail, self).__init__(*args, **kwargs)
 
-        self.client = sendgrid.SendGridClient(api_key)
+        try:
+            self.client = sendgrid.SendGridAPIClient(api_key)
+        except:
+            try:
+                self.client = sendgrid.SendGridClient(api_key)
+            except AttributeError as e:
+                raise Exception(
+                    '{}.\nSendgrid client attribute is SendGridAPIClient in newer versions. \
+Also tried older client name, SendGridClient. Both failed.'.format(e))
+        
         self.delimiters = ('-', '-')
 
     def set_variable_delimiters(self, start='-', end='-'):

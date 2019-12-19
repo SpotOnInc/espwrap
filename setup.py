@@ -29,7 +29,7 @@ setup(
         'mandrill': ['mandrill>=1.0.57'],
         'sendgrid': [
             'smtpapi>=0.3.1',
-            'sendgrid==2.2.1',
+            'sendgrid==6.1.0',
         ],
     }
 )
