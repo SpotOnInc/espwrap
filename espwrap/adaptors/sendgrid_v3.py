@@ -100,16 +100,12 @@ class SendGridMassEmail(MassEmail):
 
         # CC
         if self.cc_list:
-            list_cc = []
-            for email in self.cc_list:
-                list_cc.append(Cc(email))
+            list_cc = [Cc(email) for email in self.cc_list]
             message.cc = list_cc
 
         # BCC
         if self.bcc_list:
-            list_bcc = []
-            for email in self.bcc_list:
-                list_bcc.append(Bcc(email))
+            list_bcc = [Bcc(email) for email in self.cc_list]
             message.bcc = list_bcc
 
         # Attachment
@@ -152,10 +148,11 @@ class SendGridMassEmail(MassEmail):
         message.tracking_settings = tracking_settings
         message.from_email = From(self.from_addr)
 
-        for subgrp in to_send:
-            substitutions = subgrp[0]['merge_vars']
-            substitutions = {'{1}{0}{2}'.format(x, *self.delimiters): substitutions[x] for x in substitutions}
-            to_emails.append(To(subgrp[0]['email'], subgrp[0]['name'], substitutions=substitutions))
+        for subgrps in to_send:
+            for subgrp in subgrps:
+                substitutions = subgrp['merge_vars']
+                substitutions = {'{1}{0}{2}'.format(x, *self.delimiters): substitutions[x] for x in substitutions}
+                to_emails.append(To(subgrp['email'], subgrp['name'], substitutions=substitutions))
 
         message.add_to(to_emails, is_multiple=True)
 
