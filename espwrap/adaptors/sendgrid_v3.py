@@ -195,16 +195,14 @@ class SendGridMassEmail(MassEmail):
                     raise Exception('attempted to send {} KB custom_args, not to exceed 10 KB.'.format(custom_args_kb))
 
             #do not send if number of recipients >1000 (sendgrid rule)
-            #num_recips = len(message_dict['personalizations'])
-            #if num_recips > 1000:
-            #    raise Exception('attempted to send to {} email addresses, not to exceed 1000 addresses.'.format(num_recips))
+            num_recips = len(message_dict['personalizations'])
+            if num_recips > 1000:
+                raise Exception('attempted to send to {} email addresses, not to exceed 1000 addresses.'.format(num_recips))
 
             """
             send message and append response from this grp to list of returned responses for all grouped_recipients
             """
             try:
-                print(message)
-                #del message['personalizations'][0]['substitutions']
                 response = self.client.send(message)
                 responses.append(response)
             except Exception:
