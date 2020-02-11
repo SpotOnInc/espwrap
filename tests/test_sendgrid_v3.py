@@ -121,33 +121,35 @@ def test_message_construction():
     grouped_recipients = batch(list(me.recipients), me.partition)
 
     for grp in grouped_recipients:
-        to_send = breakdown_recipients(grp) 
-    
+        to_send = breakdown_recipients(grp)
+
         message = me.message_constructor(to_send)
         message_dict = message.get()
 
         print (message_dict)
-        
+
         assert set(message_dict['categories']) == set(tags)
         assert message_dict['tracking_settings']['open_tracking']['enable'] == True
         assert message_dict['tracking_settings']['click_tracking']['enable'] == True
 
-        assert message_dict['personalizations'][0]['to'][0]['name'] == 'Josh'
-        assert message_dict['personalizations'][0]['to'][0]['email'] == 'spam@spam.com'
-        assert message_dict['personalizations'][1]['to'][0]['name'] == 'Jim'
-        assert message_dict['personalizations'][1]['to'][0]['email'] == 'spam2@spam.com'
-        
+        print(message_dict['personalizations'])
+
+        assert message_dict['personalizations'][0]['to'][0]['name'] == 'Jim'
+        assert message_dict['personalizations'][0]['to'][0]['email'] == 'spam2@spam.com'
+        assert message_dict['personalizations'][1]['to'][0]['name'] == 'Josh'
+        assert message_dict['personalizations'][1]['to'][0]['email'] == 'spam@spam.com'
+
         company_name_key = delims[0] + 'COMPANY_NAME' + delims[1]
         assert message_dict['personalizations'][0]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
         assert message_dict['personalizations'][1]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
-        
+
         customer_name_key = delims[0] + 'CUSTOMER_NAME' + delims[1]
-        assert message_dict['personalizations'][0]['substitutions'][customer_name_key] == 'Josh'
-        assert message_dict['personalizations'][1]['substitutions'][customer_name_key] == 'Jim'
+        assert message_dict['personalizations'][0]['substitutions'][customer_name_key] == 'Jim'
+        assert message_dict['personalizations'][1]['substitutions'][customer_name_key] == 'Josh'
 
         something_unique_key = delims[0] + 'SOMETHING_UNIQUE' + delims[1]
-        assert something_unique_key not in message_dict['personalizations'][0]['substitutions'].keys()
-        assert message_dict['personalizations'][1]['substitutions'][something_unique_key] == 'tester'
+        assert message_dict['personalizations'][0]['substitutions'][something_unique_key] == 'tester'
+        assert something_unique_key not in message_dict['personalizations'][1]['substitutions'].keys()
 
         assert message_dict['ip_pool_name'] == ip_pool
 
