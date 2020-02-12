@@ -8,6 +8,9 @@ import sys
 
 if sys.version_info < (3,):
     range = xrange
+    MAPPING_TYPE = collections.Mapping
+else:
+    MAPPING_TYPE = collections.abc.Mapping
 
 MIMETYPE_HTML = 'text/html'
 MIMETYPE_PLAIN = 'text/plain'
@@ -68,7 +71,7 @@ class MassEmail(object):
 
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
-        if isinstance(email, collections.Mapping):
+        if isinstance(email, MAPPING_TYPE):
             recip = email
 
             if recip.get('merge_vars') is None:

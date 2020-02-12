@@ -28,6 +28,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
+if sys.version_info > (2,):
+    basestring = str
+
+
 class SendGridMassEmail(MassEmail):
     def __init__(self, api_key, *args, **kwargs):
         super(SendGridMassEmail, self).__init__(*args, **kwargs)
@@ -151,7 +155,10 @@ class SendGridMassEmail(MassEmail):
         for subgrps in to_send:
             for subgrp in subgrps:
                 substitutions = subgrp['merge_vars']
-                substitutions = {'{1}{0}{2}'.format(x, *self.delimiters): str(substitutions[x]) for x in substitutions}
+                substitutions = {
+                    '{1}{0}{2}'.format(x, *self.delimiters): substitutions[x]
+                    for x in substitutions
+                }
                 to_emails.append(To(subgrp['email'], subgrp['name'], substitutions=substitutions))
 
         message.add_to(to_emails, is_multiple=True)
@@ -159,7 +166,11 @@ class SendGridMassEmail(MassEmail):
         # Global Subs
         for key, val in self.global_merge_vars.items():
             new_key = '{1}{0}{2}'.format(key, *self.delimiters)
-            message.substitution = Substitution(new_key, str(val))
+            formatted_val = val
+            if not isinstance(val, basestring):
+                formatted_val = str(val)
+
+            message.substitution = Substitution(new_key, formatted_val)
 
         return message
 
