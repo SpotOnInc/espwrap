@@ -159,7 +159,11 @@ class SendGridMassEmail(MassEmail):
         # Global Subs
         for key, val in self.global_merge_vars.items():
             new_key = '{1}{0}{2}'.format(key, *self.delimiters)
-            message.substitution = Substitution(new_key, str(val))
+            formatted_val = val
+            if not isinstance(val, basestring):
+                formatted_val = str(val)
+
+            message.substitution = Substitution(new_key, formatted_val)
 
         return message
 
