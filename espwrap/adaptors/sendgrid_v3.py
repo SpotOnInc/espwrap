@@ -151,7 +151,7 @@ class SendGridMassEmail(MassEmail):
         for subgrps in to_send:
             for subgrp in subgrps:
                 substitutions = subgrp['merge_vars']
-                substitutions = {'{1}{0}{2}'.format(x, *self.delimiters): substitutions[x] for x in substitutions}
+                substitutions = {'{1}{0}{2}'.format(x, *self.delimiters): str(substitutions[x]) for x in substitutions}
                 to_emails.append(To(subgrp['email'], subgrp['name'], substitutions=substitutions))
 
         message.add_to(to_emails, is_multiple=True)
@@ -159,7 +159,7 @@ class SendGridMassEmail(MassEmail):
         # Global Subs
         for key, val in self.global_merge_vars.items():
             new_key = '{1}{0}{2}'.format(key, *self.delimiters)
-            message.substitution = Substitution(new_key, val)
+            message.substitution = Substitution(new_key, str(val))
 
         return message
 
@@ -200,6 +200,7 @@ class SendGridMassEmail(MassEmail):
             send message and append response from this grp to list of returned responses for all grouped_recipients
             """
             try:
+                logger.debug(message)
                 response = self.client.send(message)
                 responses.append(response)
             except Exception:
