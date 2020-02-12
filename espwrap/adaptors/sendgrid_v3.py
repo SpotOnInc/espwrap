@@ -28,6 +28,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
+if sys.version_info > (2,):
+    basestring = str
+
+
 class SendGridMassEmail(MassEmail):
     def __init__(self, api_key, *args, **kwargs):
         super(SendGridMassEmail, self).__init__(*args, **kwargs)
