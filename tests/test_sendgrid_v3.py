@@ -1,13 +1,12 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from __future__ import print_function, division, unicode_literals, absolute_import
 
-import json
 import sys
 
 import pytest
 
-from espwrap.base import MIMETYPE_TEXT, batch
+from espwrap.base import batch
 from espwrap.adaptors.sendgrid_v3 import SendGridMassEmail
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
 
@@ -15,6 +14,7 @@ if sys.version_info < (3,):
     range = xrange
 
 API_KEY = 'unit_test'
+
 
 def test_breakdown_recipients():
     me = SendGridMassEmail(API_KEY)
@@ -65,6 +65,7 @@ def test_add_tags():
 
     me.add_tags('tenth')
 
+
 def test_message_construction():
     me = SendGridMassEmail(API_KEY)
 
@@ -97,6 +98,14 @@ def test_message_construction():
                 'SOMETHING_UNIQUE': 'tester',
             },
         },
+        {
+            'name': '姓',
+            'email': 'test@test.com',
+            'merge_vars': {
+                'CUSTOMER_NAME': '姓',
+                'SOMETHING_UNIQUE': '独特'
+            }
+        }
     ])
 
     me.add_global_merge_vars(COMPANY_NAME=company_name)
@@ -121,6 +130,7 @@ def test_message_construction():
     grouped_recipients = batch(list(me.recipients), me.partition)
 
     for grp in grouped_recipients:
+        # Note: The order of recipients in this test case is reversed from what's listed above
         to_send = breakdown_recipients(grp)
 
         message = me.message_constructor(to_send)
@@ -134,22 +144,25 @@ def test_message_construction():
 
         print(message_dict['personalizations'])
 
-        assert message_dict['personalizations'][0]['to'][0]['name'] == 'Jim'
-        assert message_dict['personalizations'][0]['to'][0]['email'] == 'spam2@spam.com'
-        assert message_dict['personalizations'][1]['to'][0]['name'] == 'Josh'
-        assert message_dict['personalizations'][1]['to'][0]['email'] == 'spam@spam.com'
+        assert message_dict['personalizations'][0]['to'][0]['name'] == '姓'
+        assert message_dict['personalizations'][0]['to'][0]['email'] == 'test@test.com'
+        assert message_dict['personalizations'][1]['to'][0]['name'] == 'Jim'
+        assert message_dict['personalizations'][1]['to'][0]['email'] == 'spam2@spam.com'
+        assert message_dict['personalizations'][2]['to'][0]['name'] == 'Josh'
+        assert message_dict['personalizations'][2]['to'][0]['email'] == 'spam@spam.com'
 
         company_name_key = delims[0] + 'COMPANY_NAME' + delims[1]
         assert message_dict['personalizations'][0]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
         assert message_dict['personalizations'][1]['substitutions'][company_name_key] == 'UnitTest Spam Corp the Second'
 
         customer_name_key = delims[0] + 'CUSTOMER_NAME' + delims[1]
-        assert message_dict['personalizations'][0]['substitutions'][customer_name_key] == 'Jim'
-        assert message_dict['personalizations'][1]['substitutions'][customer_name_key] == 'Josh'
+        assert message_dict['personalizations'][0]['substitutions'][customer_name_key] == '姓'
+        assert message_dict['personalizations'][1]['substitutions'][customer_name_key] == 'Jim'
+        assert message_dict['personalizations'][2]['substitutions'][customer_name_key] == 'Josh'
 
         something_unique_key = delims[0] + 'SOMETHING_UNIQUE' + delims[1]
-        assert message_dict['personalizations'][0]['substitutions'][something_unique_key] == 'tester'
-        assert something_unique_key not in message_dict['personalizations'][1]['substitutions'].keys()
+        assert message_dict['personalizations'][0]['substitutions'][something_unique_key] == '独特'
+        assert something_unique_key not in message_dict['personalizations'][2]['substitutions'].keys()
 
         assert message_dict['ip_pool_name'] == ip_pool
 
