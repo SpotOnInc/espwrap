@@ -194,12 +194,7 @@ class SendGridMassEmail(MassEmail):
         try:
             username = email.split('@')[0]
             if '.' in username or '+' in username:
-                if self.metadata and self.metadata.get('locale'):
-                    greeting = 'Hola' if 'es' in self.metadata.get('locale') else 'Hello'
-                else:
-                    greeting = 'Hello'
-
-                return Subject('{} {} - {}'.format(greeting, name, self.subject))
+                return Subject('{} [{}]'.format(self.subject, email))
         except Exception as e:
             logger.exception(e)
 
