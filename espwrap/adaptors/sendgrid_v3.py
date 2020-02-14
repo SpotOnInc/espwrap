@@ -127,7 +127,7 @@ class SendGridMassEmail(MassEmail):
                 message.custom_arg = CustomArg(key, val)
 
         # Metadata
-        if hasattr(self, 'metadata'):
+        if self.metadata:
             for key, val in self.metadata.items():
                 message.custom_arg = CustomArg(key, val)
 
@@ -159,7 +159,15 @@ class SendGridMassEmail(MassEmail):
                     '{1}{0}{2}'.format(x, *self.delimiters): substitutions[x]
                     for x in substitutions
                 }
-                to_emails.append(To(subgrp['email'], subgrp['name'], substitutions=substitutions))
+                email = subgrp['email']
+                name = subgrp['name']
+                to_emails.append(
+                    To(
+                        email=email,
+                        name=name,
+                        substitutions=substitutions,
+                        subject=self.generate_subject(email, name))
+                )
 
         message.add_to(to_emails, is_multiple=True)
 
@@ -173,6 +181,26 @@ class SendGridMassEmail(MassEmail):
             message.substitution = Substitution(new_key, formatted_val)
 
         return message
+
+    def generate_subject(self, email, name):
+        """
+        Generate email subject for recipient.
+        If username contains "." or "+" it is considered an alias so we
+        prepend a custom greeting to avoid bounces from providers like Gmail
+        :param email: Recipient email
+        :param name: Recipient name
+        :return:
+        """
+        try:
+            if self.metadata and self.metadata.get('locale'):
+                username = email.split('@')[0]
+                if '.' in username or '+' in username:
+                    greeting = 'Hola' if 'es' in self.metadata.get('locale') else 'Hello'
+                    return Subject('{} {} - {}'.format(greeting, name, self.subject))
+        except Exception as e:
+            logger.exception(e)
+
+        return Subject(self.subject)
 
 
     def send(self):
