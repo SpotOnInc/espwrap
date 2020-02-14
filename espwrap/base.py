@@ -38,7 +38,7 @@ class MassEmail(object):
     def __init__(self, subject='', from_addr='', text='', html='',
                  send_partition=500, reply_to_addr='', template_name=None,
                  webhook_data=None, ip_pool=None, track_clicks=False,
-                 track_opens=False):
+                 track_opens=False, metadata=None):
         self.recipients = []
         self.global_merge_vars = {}
         self.tags = []
@@ -68,6 +68,7 @@ class MassEmail(object):
         self.bcc_list = []
         self.cc_list = []
         self.send_at = None
+        self.metadata = metadata or {}
 
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
