@@ -189,7 +189,7 @@ class SendGridMassEmail(MassEmail):
         prepend a custom greeting to avoid bounces from providers like Gmail
         :param email: Recipient email
         :param name: Recipient name
-        :return:
+        :return subject: sendgrid.helpers.mail.Subject
         """
         try:
             if self.metadata and self.metadata.get('locale'):
