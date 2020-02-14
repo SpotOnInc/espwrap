@@ -192,11 +192,14 @@ class SendGridMassEmail(MassEmail):
         :return subject: sendgrid.helpers.mail.Subject
         """
         try:
-            if self.metadata and self.metadata.get('locale'):
-                username = email.split('@')[0]
-                if '.' in username or '+' in username:
+            username = email.split('@')[0]
+            if '.' in username or '+' in username:
+                if self.metadata and self.metadata.get('locale'):
                     greeting = 'Hola' if 'es' in self.metadata.get('locale') else 'Hello'
-                    return Subject('{} {} - {}'.format(greeting, name, self.subject))
+                else:
+                    greeting = 'Hello'
+
+                return Subject('{} {} - {}'.format(greeting, name, self.subject))
         except Exception as e:
             logger.exception(e)
 
