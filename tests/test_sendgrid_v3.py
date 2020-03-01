@@ -3,7 +3,10 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
 import sys
-from unittest.mock import Mock, patch
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 import pytest
 
