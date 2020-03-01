@@ -31,7 +31,7 @@ if sys.version_info > (2,):
     basestring = str
 
 
-_HTTP_EXC_MSG = 'There as an error while sending the email. Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
+_HTTP_EXC_MSG = 'SendGrid responded with an HTTP-error code.  Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
 
 
 class SendGridMassEmail(MassEmail):
