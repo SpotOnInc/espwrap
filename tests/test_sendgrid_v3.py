@@ -180,6 +180,7 @@ def test_send_error_400(caplog):
     subject = 'subject'
     resp_status_code = 400
     resp_reason = 'main reason for error'
+    resp_body = 'the body of the response'
 
     me = SendGridMassEmail(API_KEY)
 
@@ -191,6 +192,7 @@ def test_send_error_400(caplog):
         error = Mock()
         error.code = resp_status_code
         error.reason = resp_reason
+        error.read = lambda: resp_body
 
         mock_send.side_effect = BadRequestsError(error)
 
@@ -201,5 +203,5 @@ def test_send_error_400(caplog):
         severity = caplog.record_tuples[0][1]
         msg = caplog.record_tuples[0][2]
         assert severity == 40, 'The log should be an Error level log.'
-        assert msg == _HTTP_EXC_MSG % (subject, resp_status_code, resp_reason),\
+        assert msg == _HTTP_EXC_MSG % (subject, resp_status_code, resp_reason, resp_body),\
             'The log message should contain details from the response.'

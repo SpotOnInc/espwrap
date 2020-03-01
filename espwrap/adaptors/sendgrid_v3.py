@@ -31,7 +31,7 @@ if sys.version_info > (2,):
     basestring = str
 
 
-_HTTP_EXC_MSG = 'There as an error while sending the email. Email Subject: %s, Status Code: %s, Reason: %s'
+_HTTP_EXC_MSG = 'There as an error while sending the email. Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
 
 
 class SendGridMassEmail(MassEmail):
@@ -235,7 +235,7 @@ class SendGridMassEmail(MassEmail):
                 logger.debug(message)
                 response = self.client.send(message)
             except HTTPError as e:
-                logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason)
+                logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason, e.body)
             except Exception:
                 logger.exception('Unknown exception while sending a SendGridMassEmail.')
             else:
