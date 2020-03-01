@@ -13,6 +13,7 @@ from sendgrid.helpers.mail import (
     TrackingSettings, ClickTracking,
     OpenTracking, OpenTrackingSubstitutionTag,
     Section)
+from python_http_client.exceptions import HTTPError
 
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
@@ -28,6 +29,9 @@ logger.addHandler(handler)
 
 if sys.version_info > (2,):
     basestring = str
+
+
+_HTTP_EXC_MSG = 'There as an error while sending the email. Email Subject: %s, Status Code: %s, Reason: %s'
 
 
 class SendGridMassEmail(MassEmail):
@@ -230,9 +234,12 @@ class SendGridMassEmail(MassEmail):
             try:
                 logger.debug(message)
                 response = self.client.send(message)
-                responses.append(response)
+            except HTTPError as e:
+                logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason)
             except Exception:
-                logger.exception('')
+                logger.exception('Unknown exception while sending a SendGridMassEmail.')
+            else:
+                responses.append(response)
 
         # return list of all responses for each grp in grouped_recipients
         return responses

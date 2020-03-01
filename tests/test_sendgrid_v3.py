@@ -3,12 +3,14 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
 import sys
+from unittest.mock import Mock, patch
 
 import pytest
 
 from espwrap.base import batch
-from espwrap.adaptors.sendgrid_v3 import SendGridMassEmail
+from espwrap.adaptors.sendgrid_v3 import SendGridMassEmail, _HTTP_EXC_MSG
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
+from python_http_client.exceptions import BadRequestsError  # this is a dependency of sendgrid-python
 
 if sys.version_info < (3,):
     range = xrange
@@ -167,3 +169,37 @@ def test_message_construction():
         assert message_dict['ip_pool_name'] == ip_pool
 
         assert message_dict['custom_args']['template_name'] == template_name
+
+
+def test_send_error_400(caplog):
+    """
+    Test the handling of HTTP 400 Bad Request responses. The Sendgrid V3 API will return data
+    along with a 400 response that has details on why it was rejected.  Make sure this data
+    makes it back to the caller, pretty pretty please.
+    """
+    subject = 'subject'
+    resp_status_code = 400
+    resp_reason = 'main reason for error'
+
+    me = SendGridMassEmail(API_KEY)
+
+    me.subject = subject
+    me.from_addr = 'noreply@mailinator.com'
+    me.add_recipient(email='recip@mailinator.com')
+
+    with patch('sendgrid.SendGridAPIClient.send') as mock_send:
+        error = Mock()
+        error.code = resp_status_code
+        error.reason = resp_reason
+
+        mock_send.side_effect = BadRequestsError(error)
+
+        me.send()
+
+        assert mock_send.called, 'It should have made it to the send method in the sendgrid lib.'
+        assert len(caplog.record_tuples) == 1, 'There should a log message in the exception block.'
+        severity = caplog.record_tuples[0][1]
+        msg = caplog.record_tuples[0][2]
+        assert severity == 40, 'The log should be an Error level log.'
+        assert msg == _HTTP_EXC_MSG % (subject, resp_status_code, resp_reason),\
+            'The log message should contain details from the response.'
