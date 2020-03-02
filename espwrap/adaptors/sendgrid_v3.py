@@ -3,10 +3,8 @@ from __future__ import print_function, division, unicode_literals, absolute_impo
 import base64
 import json
 import logging
-import os
 import sys
 
-from python_http_client import exceptions
 import sendgrid
 from sendgrid.helpers.mail import (
     Mail, From, To, Cc, Bcc, Subject, Substitution,
@@ -15,6 +13,7 @@ from sendgrid.helpers.mail import (
     TrackingSettings, ClickTracking,
     OpenTracking, OpenTrackingSubstitutionTag,
     Section)
+from python_http_client.exceptions import HTTPError
 
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
@@ -32,6 +31,9 @@ if sys.version_info > (2,):
     basestring = str
 
 
+_HTTP_EXC_MSG = 'SendGrid responded with an HTTP-error code.  Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
+
+
 class SendGridMassEmail(MassEmail):
     def __init__(self, api_key, *args, **kwargs):
         super(SendGridMassEmail, self).__init__(*args, **kwargs)
@@ -40,10 +42,8 @@ class SendGridMassEmail(MassEmail):
 
         self.delimiters = ('-', '-')
 
-
     def set_variable_delimiters(self, start='-', end='-'):
         self.delimiters = (start, end)
-
 
     def get_variable_delimiters(self, as_dict=False):
         if as_dict:
@@ -52,7 +52,6 @@ class SendGridMassEmail(MassEmail):
                 'end': self.delimiters[1],
             }
         return self.delimiters
-
 
     def add_tags(self, *tags):
         if len(tags) > 10:
@@ -200,7 +199,6 @@ class SendGridMassEmail(MassEmail):
 
         return Subject(self.subject)
 
-
     def send(self):
 
         responses=[]
@@ -209,18 +207,15 @@ class SendGridMassEmail(MassEmail):
 
         grouped_recipients = batch(list(self.recipients), self.partition)
 
-        #DEBUG
-        print (self.recipients)
-
         for grp in grouped_recipients:
             to_send = breakdown_recipients(grp)
 
             message = self.message_constructor(to_send)
 
-            #message data as dict for examination/validation below
+            # message data as dict for examination/validation below
             message_dict = message.get()
 
-            #do not send if custom args >10 KB (sendgrid rule)
+            # do not send if custom args >10 KB (sendgrid rule)
             if 'custom_args' in message_dict:
                 message_custom_args = len(json.dumps(message_dict['custom_args']))
                 custom_args_size = sys.getsizeof(message_custom_args)
@@ -228,7 +223,7 @@ class SendGridMassEmail(MassEmail):
                 if custom_args_kb > 10:
                     raise Exception('attempted to send {} KB custom_args, not to exceed 10 KB.'.format(custom_args_kb))
 
-            #do not send if number of recipients >1000 (sendgrid rule)
+            # do not send if number of recipients >1000 (sendgrid rule)
             num_recips = len(message_dict['personalizations'])
             if num_recips > 1000:
                 raise Exception('attempted to send to {} email addresses, not to exceed 1000 addresses.'.format(num_recips))
@@ -239,9 +234,12 @@ class SendGridMassEmail(MassEmail):
             try:
                 logger.debug(message)
                 response = self.client.send(message)
-                responses.append(response)
+            except HTTPError as e:
+                logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason, e.body)
             except Exception:
-                logger.exception('')
+                logger.exception('Unknown exception while sending a SendGridMassEmail.')
+            else:
+                responses.append(response)
 
-        #return list of all responses for each grp in grouped_recipients
+        # return list of all responses for each grp in grouped_recipients
         return responses
