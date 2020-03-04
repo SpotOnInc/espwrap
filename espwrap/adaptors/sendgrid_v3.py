@@ -175,7 +175,10 @@ class SendGridMassEmail(MassEmail):
             new_key = '{1}{0}{2}'.format(key, *self.delimiters)
             formatted_val = val
             if not isinstance(val, basestring):
-                formatted_val = str(val)
+                try:
+                    formatted_val = str(val)
+                except UnicodeEncodeError:
+                    formatted_val = val.encode('utf-8')
 
             message.substitution = Substitution(new_key, formatted_val)
 
