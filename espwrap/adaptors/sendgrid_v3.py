@@ -193,7 +193,7 @@ class SendGridMassEmail(MassEmail):
         try:
             username = email.split('@')[0]
             if '.' in username or '+' in username:
-                return Subject('{} [{}]'.format(self.subject, email))
+                return Subject('{} [{}]'.format(self.subject.decode('utf-8'), email.decode('utf-8')))
         except Exception as e:
             logger.exception(e)
 
