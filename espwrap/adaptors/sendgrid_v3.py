@@ -149,7 +149,7 @@ class SendGridMassEmail(MassEmail):
                 self.track_clicks
             )
         message.tracking_settings = tracking_settings
-        message.from_email = From(self.from_addr)
+        message.from_email = From(email=self.from_addr, name=self.from_name)
 
         for subgrps in to_send:
             for subgrp in subgrps:
