@@ -175,7 +175,10 @@ class SendGridMassEmail(MassEmail):
             new_key = '{1}{0}{2}'.format(key, *self.delimiters)
             formatted_val = val
             if not isinstance(val, basestring):
-                formatted_val = str(val)
+                try:
+                    formatted_val = str(val)
+                except UnicodeEncodeError:
+                    formatted_val = val.encode('utf-8')
 
             message.substitution = Substitution(new_key, formatted_val)
 
@@ -193,7 +196,7 @@ class SendGridMassEmail(MassEmail):
         try:
             username = email.split('@')[0]
             if '.' in username or '+' in username:
-                return Subject('{} [{}]'.format(self.subject.decode('utf-8'), email))
+                return Subject('{} [{}]'.format(self.subject.decode('utf-8'), email.decode('utf-8')))
         except Exception as e:
             logger.exception(e)
 
