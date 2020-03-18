@@ -38,7 +38,7 @@ class MassEmail(object):
     def __init__(self, subject='', from_addr='', text='', html='',
                  send_partition=500, reply_to_addr='', template_name=None,
                  webhook_data=None, ip_pool=None, track_clicks=False,
-                 track_opens=False, metadata=None):
+                 track_opens=False, metadata=None, from_name=''):
         self.recipients = []
         self.global_merge_vars = {}
         self.tags = []
@@ -47,6 +47,7 @@ class MassEmail(object):
         self.template_name = template_name
 
         self.subject = subject
+        self.from_name = from_name
         self.from_addr = from_addr
         self.reply_to_addr = None
 
