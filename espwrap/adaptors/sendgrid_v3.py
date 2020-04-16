@@ -158,17 +158,26 @@ class SendGridMassEmail(MassEmail):
         for subgrps in to_send:
             for subgrp in subgrps:
                 substitutions = subgrp['merge_vars']
-                substitutions = {
-                    '{1}{0}{2}'.format(x, *self.delimiters): substitutions[x]
-                    for x in substitutions
-                }
+                substitutions_dict = {}
+
+                for key, val in substitutions.items():
+                    new_key = '{1}{0}{2}'.format(key, *self.delimiters)
+                    formatted_val = val
+                    if not isinstance(val, basestring):
+                        try:
+                            formatted_val = str(val)
+                        except UnicodeEncodeError:
+                            formatted_val = val.encode('utf-8')
+
+                    substitutions_dict[new_key] = formatted_val
+
                 email = subgrp['email']
                 name = subgrp['name']
                 to_emails.append(
                     To(
                         email=email,
                         name=name,
-                        substitutions=substitutions,
+                        substitutions=substitutions_dict,
                         subject=self.generate_subject(email, name))
                 )
 
