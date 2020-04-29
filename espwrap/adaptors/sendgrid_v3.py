@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function, division, unicode_literals, absolute_import
 
 import base64
@@ -209,7 +210,7 @@ class SendGridMassEmail(MassEmail):
         try:
             username = email.split('@')[0]
             if '.' in username or '+' in username:
-                return Subject('{} [{}]'.format(self.subject.decode('utf-8'), email.decode('utf-8')))
+                return Subject(u'{} [{}]'.format(self.subject, email))
         except Exception as e:
             logger.exception(e)
 
