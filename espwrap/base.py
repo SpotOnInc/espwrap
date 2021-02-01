@@ -71,7 +71,6 @@ class MassEmail(object):
         self.send_at = None
         self.metadata = metadata or {}
 
-
     @property
     def tags(self):
         return self.__tags
