@@ -53,14 +53,14 @@ def test_add_tags():
     me = SendGridMassEmail(API_KEY)
 
     with pytest.raises(Exception) as err:
-        me.add_tags(*['something'] * 11)
+        me.add_tags(*[str(tag) for tag in range(11)])
 
     assert 'Too many tags' in str(err)
 
-    me.add_tags(*['something'] * 9)
+    me.add_tags(*[str(tag) for tag in range(9)])
 
     with pytest.raises(Exception) as err:
-        me.add_tags(*['something'] * 2)
+        me.add_tags(*['foo', 'bar'])
 
     assert 'limit' in str(err)
 
