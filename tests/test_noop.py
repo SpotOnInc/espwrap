@@ -132,8 +132,8 @@ def test_no_tags_by_default():
 def test_add_tags():
     me = NoopMassEmail()
 
-    me.add_tags('test', 'mode')
-
+    # Make sure dupes are eliminated
+    me.add_tags('test', 'mode', 'test')
     assert len(me.get_tags()) == 2
 
 

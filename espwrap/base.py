@@ -71,6 +71,18 @@ class MassEmail(object):
         self.send_at = None
         self.metadata = metadata or {}
 
+    @property
+    def tags(self):
+        return self.__tags
+
+    @tags.setter
+    def tags(self, values):
+        if not values:
+            self.__tags = []
+        for tag in values:
+            if tag not in self.tags:
+                self.__tags.append(tag)
+
     def add_recipient(self, email, name='', merge_vars=None):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, MAPPING_TYPE):
@@ -145,7 +157,7 @@ class MassEmail(object):
         self.tags = []
 
     def add_tags(self, *tags):
-        self.tags += tags
+        self.tags = self.tags + list(tags)
 
     def set_body(self, content, mimetype=MIMETYPE_HTML):
         self.body[mimetype] = content
