@@ -5,6 +5,7 @@ import base64
 import json
 import logging
 import sys
+import time
 
 import sendgrid
 from sendgrid.helpers.mail import (
@@ -14,7 +15,7 @@ from sendgrid.helpers.mail import (
     TrackingSettings, ClickTracking,
     OpenTracking, OpenTrackingSubstitutionTag,
     Section)
-from python_http_client.exceptions import HTTPError
+from python_http_client.exceptions import HTTPError, TooManyRequestsError
 
 from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
@@ -33,6 +34,7 @@ if sys.version_info > (2,):
 
 
 _HTTP_EXC_MSG = 'SendGrid responded with an HTTP-error code.  Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
+MAX_ATTEMPTS = 3
 
 
 class SendGridMassEmail(MassEmail):
@@ -248,15 +250,22 @@ class SendGridMassEmail(MassEmail):
             """
             send message and append response from this grp to list of returned responses for all grouped_recipients
             """
-            try:
-                logger.debug(message)
-                response = self.client.send(message)
-            except HTTPError as e:
-                logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason, e.body)
-            except Exception:
-                logger.exception('Unknown exception while sending a SendGridMassEmail.')
-            else:
-                responses.append(response)
+            attempt = 0
+            logger.debug(message)
+            while attempt < MAX_ATTEMPTS:
+                try:
+                    response = self.client.send(message)
+                    responses.append(response)
+                except TooManyRequestsError:
+                    attempt += 1
+                    logger.exception('[{}] Too many requests, trying to resend the message...'.format(attempt))
+                    time.sleep(1)
+                    continue
+                except HTTPError as e:
+                    logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason, e.body)
+                except Exception:
+                    logger.exception('Unknown exception while sending a SendGridMassEmail.')
+                break
 
         # return list of all responses for each grp in grouped_recipients
         return responses
