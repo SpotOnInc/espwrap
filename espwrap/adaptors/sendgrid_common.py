@@ -1,12 +1,13 @@
 import re
 
+
 def breakdown_recipients(grp):
     seen = set()
     to_send = [[]]
 
     for recip in grp:
-        email = recip.get('email')
-        email_no_alias = re.sub(r'[\!+](\S)*@', '@', email)
+        email = recip.get("email")
+        email_no_alias = re.sub(r"[\!+](\S)*@", "@", email)
 
         if email_no_alias in seen:
             to_send.append([recip])

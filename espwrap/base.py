@@ -1,10 +1,9 @@
-from __future__ import print_function, division, unicode_literals
+from __future__ import division, print_function, unicode_literals
 
 import abc
 import collections
 import itertools
 import sys
-
 
 if sys.version_info < (3,):
     range = xrange
@@ -12,20 +11,20 @@ if sys.version_info < (3,):
 else:
     MAPPING_TYPE = collections.abc.Mapping
 
-MIMETYPE_HTML = 'text/html'
-MIMETYPE_PLAIN = 'text/plain'
+MIMETYPE_HTML = "text/html"
+MIMETYPE_PLAIN = "text/plain"
 MIMETYPE_TEXT = MIMETYPE_PLAIN
 
 
 def batch(iterable, count=1):
-    '''
+    """
     Split an iterable into a list of iterables having a length <= `count`
-    '''
+    """
 
     total = len(iterable)
 
     for ndx in range(0, total, count):
-        yield iterable[ndx:min(ndx + count, total)]
+        yield iterable[ndx : min(ndx + count, total)]
 
 
 class MassEmail(object):
@@ -33,12 +32,24 @@ class MassEmail(object):
 
     @abc.abstractmethod
     def send(self):
-        raise Exception('Send method must be defined on a per-ESP basis')
+        raise Exception("Send method must be defined on a per-ESP basis")
 
-    def __init__(self, subject='', from_addr='', text='', html='',
-                 send_partition=500, reply_to_addr='', template_name=None,
-                 webhook_data=None, ip_pool=None, track_clicks=False,
-                 track_opens=False, metadata=None, from_name=''):
+    def __init__(
+        self,
+        subject="",
+        from_addr="",
+        text="",
+        html="",
+        send_partition=500,
+        reply_to_addr="",
+        template_name=None,
+        webhook_data=None,
+        ip_pool=None,
+        track_clicks=False,
+        track_opens=False,
+        metadata=None,
+        from_name="",
+    ):
         self.recipients = []
         self.global_merge_vars = {}
         self.tags = []
@@ -83,18 +94,18 @@ class MassEmail(object):
             if tag not in self.tags:
                 self.__tags.append(tag)
 
-    def add_recipient(self, email, name='', merge_vars=None):
+    def add_recipient(self, email, name="", merge_vars=None):
         # was given a dict containing everything, rather than a spread
         if isinstance(email, MAPPING_TYPE):
             recip = email
 
-            if recip.get('merge_vars') is None:
-                recip['merge_vars'] = {}
+            if recip.get("merge_vars") is None:
+                recip["merge_vars"] = {}
         else:
             recip = {
-                'name': name,
-                'email': email,
-                'merge_vars': merge_vars or {},
+                "name": name,
+                "email": email,
+                "merge_vars": merge_vars or {},
             }
 
         # tuple for performance
@@ -107,36 +118,36 @@ class MassEmail(object):
         self.recipients = []
 
     def solidify_recipients(self):
-        '''
+        """
         Since recipients can be chained iterables of any form, but must
         eventually become lists that are passed to some upstream API, we want
         a consistent place to do that step. Thus, this will listify the internal
         iterable of recipients.
-        '''
+        """
 
         self.recipients = list(self.recipients)
 
         for recip in self.recipients:
-            if recip.get('merge_vars') is None:
-                recip['merge_vars'] = {}
+            if recip.get("merge_vars") is None:
+                recip["merge_vars"] = {}
 
         return self.recipients
 
     def get_recipients(self):
-        '''
+        """
         Safely returns the internal recipients listing, casting to an actual list.
 
         This will implicitly listify the recipients, see #solidify_recipients()
         for details
-        '''
+        """
 
         return self.solidify_recipients()
 
     def get_raw_recipients(self):
-        '''
+        """
         Returns the internal recipients listing in whatever, potentially unsafe,
         form it might be in (likely some itertools chain).
-        '''
+        """
 
         return self.recipients
 
@@ -168,7 +179,7 @@ class MassEmail(object):
             if spec:
                 return spec
 
-            raise AttributeError('Specified mimetype has not been set in body')
+            raise AttributeError("Specified mimetype has not been set in body")
 
         return self.body
 
@@ -232,15 +243,15 @@ class MassEmail(object):
     def set_template_name(self, template_name):
         self.template_name = template_name
 
-    def set_variable_delimiters(self, start='-', end='-'):
-        raise NotImplementedError('Your ESP evidently does not support variable delimiters')
+    def set_variable_delimiters(self, start="-", end="-"):
+        raise NotImplementedError("Your ESP evidently does not support variable delimiters")
 
     def get_variable_delimiters(self, as_dict=False):
-        raise NotImplementedError('Your ESP evidently does not support variable delimiters')
+        raise NotImplementedError("Your ESP evidently does not support variable delimiters")
 
     def validate(self):
         if not self.subject or not self.from_addr:
-            raise Exception('from address and subject are required!')
+            raise Exception("from address and subject are required!")
 
     def add_attachment(self, file_name, file_or_path):
         self.attachments[file_name] = file_or_path
