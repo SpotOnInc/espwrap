@@ -116,9 +116,9 @@ class SendGridMassEmail(MassEmail):
 
         # Attachment
         if self.attachments:
-            for file_name, file_path_or_string in self.attachments.iteritems():
+            for file_name, file_path_or_string in self.attachments.items():
                 attachment = Attachment()
-                encoded = base64.b64encode(str(file_path_or_string))
+                encoded = base64.b64encode(file_path_or_string).decode('ascii')
                 attachment.file_content = FileContent(encoded)
                 attachment.file_name = FileName(file_name)
             message.attachment = attachment

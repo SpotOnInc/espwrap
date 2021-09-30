@@ -132,7 +132,7 @@ Also tried older client name, SendGridClient. Both failed.'.format(e))
                     msg.set_headers({'Priority': 'Urgent', 'Importance': 'high'})
 
                 if self.attachments:
-                    for file_name, file_path_or_string in self.attachments.iteritems():
+                    for file_name, file_path_or_string in self.attachments.items():
                         msg.add_attachment(file_name, file_path_or_string)
 
                 if self.send_at:
