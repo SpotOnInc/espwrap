@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from __future__ import print_function, division, unicode_literals, absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
 
 import pytest
 
-from espwrap.base import batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.noop import NoopMassEmail
+from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT, batch
 
 if sys.version_info < (3,):
     range = xrange
@@ -16,13 +16,13 @@ if sys.version_info < (3,):
 def generate_recipients(count=10):
     for x in range(count):
         yield {
-            'name': 'Test Recip {}'.format(x),
-            'email': 'test+{}@something.com'.format(x),
+            "name": "Test Recip {}".format(x),
+            "email": "test+{}@something.com".format(x),
         }
 
 
 def test_batch():
-    tester = ['lol']*500
+    tester = ["lol"] * 500
 
     res = list(batch(tester, 5))
 
@@ -41,42 +41,45 @@ def test_add_recipient():
     me = NoopMassEmail()
 
     me.add_recipient(
-        name='Tester Dude', email='test+tester@something.com',
-        merge_vars={'EXAMPLE': 'A TEST REPLACEMENT'}
+        name="Tester Dude",
+        email="test+tester@something.com",
+        merge_vars={"EXAMPLE": "A TEST REPLACEMENT"},
     )
 
     recips = me.get_recipients()
 
     assert len(recips) == 1
 
-    assert recips[0].get('merge_vars') is not None
+    assert recips[0].get("merge_vars") is not None
 
 
 def test_add_recipients():
-    '''
+    """
     Test that a list of recipients can be added in bulk, assigning a default
     empty dict of merge vars when not provided
-    '''
+    """
 
     me = NoopMassEmail()
 
-    me.add_recipients([
-        {
-            'email': 'test+tester@something.com',
-            'name': 'Some test dude',
-            'merge_vars': {'SOMETHING': 'test'},
-        },
-        {
-            'email': 'test1+tester1@something.com',
-            'name': 'Some test dude',
-        },
-    ])
+    me.add_recipients(
+        [
+            {
+                "email": "test+tester@something.com",
+                "name": "Some test dude",
+                "merge_vars": {"SOMETHING": "test"},
+            },
+            {
+                "email": "test1+tester1@something.com",
+                "name": "Some test dude",
+            },
+        ]
+    )
 
     recips = me.get_recipients()
 
     assert len(recips) == 2
 
-    recips = [x for x in me.get_recipients() if x.get('merge_vars') == {}]
+    recips = [x for x in me.get_recipients() if x.get("merge_vars") == {}]
 
     assert len(recips) == 1
 
@@ -90,7 +93,7 @@ def test_can_lazily_add_recipients_and_solidify():
 
     recips = me.get_raw_recipients()
 
-    assert hasattr(recips, '__iter__') and not hasattr(recips, '__len__')
+    assert hasattr(recips, "__iter__") and not hasattr(recips, "__len__")
 
     recips_list = me.solidify_recipients()
 
@@ -106,17 +109,17 @@ def test_no_global_merge_vars_by_default():
 def test_add_global_merge_vars():
     me = NoopMassEmail()
 
-    me.add_global_merge_vars(FIRST='server', SECOND_ONE_IS_BEST='client')
+    me.add_global_merge_vars(FIRST="server", SECOND_ONE_IS_BEST="client")
 
     assert len(me.get_global_merge_vars().items()) == 2
-    assert 'FIRST' in me.get_global_merge_vars().keys()
-    assert 'SECOND_ONE_IS_BEST' in me.get_global_merge_vars().keys()
+    assert "FIRST" in me.get_global_merge_vars().keys()
+    assert "SECOND_ONE_IS_BEST" in me.get_global_merge_vars().keys()
 
 
 def test_clear_global_merge_vars():
     me = NoopMassEmail()
 
-    me.add_global_merge_vars(FIRST='server', SECOND='client')
+    me.add_global_merge_vars(FIRST="server", SECOND="client")
 
     me.clear_global_merge_vars()
 
@@ -133,14 +136,14 @@ def test_add_tags():
     me = NoopMassEmail()
 
     # Make sure dupes are eliminated
-    me.add_tags('test', 'mode', 'test')
+    me.add_tags("test", "mode", "test")
     assert len(me.get_tags()) == 2
 
 
 def test_clear_tags():
     me = NoopMassEmail()
 
-    me.add_tags('test', 'mode')
+    me.add_tags("test", "mode")
 
     assert len(me.get_tags()) == 2
 
@@ -151,7 +154,7 @@ def test_clear_tags():
 
 def test_set_body_and_get_body():
     me = NoopMassEmail()
-    msg = '<h1>Hello!</h1>'
+    msg = "<h1>Hello!</h1>"
 
     me.set_body(msg)
 
@@ -161,17 +164,17 @@ def test_set_body_and_get_body():
     with pytest.raises(AttributeError) as e:
         me.get_body(mimetype=MIMETYPE_TEXT)
 
-    assert 'mimetype' in str(e.value)
+    assert "mimetype" in str(e.value)
 
 
 def test_set_body_with_mimetype():
-    '''
+    """
     Test that setting a body will set the default (HTML), but this mimetype
     can be overridden with an argument (for, ie. plain text)
-    '''
+    """
     me = NoopMassEmail()
-    msg_text = 'Tester Test'
-    msg_html = '<h1>Tester Test HTML</h1>'
+    msg_text = "Tester Test"
+    msg_html = "<h1>Tester Test HTML</h1>"
 
     me.set_body(msg_html)
     me.set_body(msg_text, mimetype=MIMETYPE_TEXT)
@@ -182,7 +185,7 @@ def test_set_body_with_mimetype():
 
 def test_from_addr():
     me = NoopMassEmail()
-    addr = 'spam@spam.com'
+    addr = "spam@spam.com"
 
     me.set_from_addr(addr)
 
@@ -191,7 +194,7 @@ def test_from_addr():
 
 def test_reply_to_addr():
     me = NoopMassEmail()
-    addr = 'spam@spam.com'
+    addr = "spam@spam.com"
 
     me.set_reply_to_addr(addr)
 
@@ -200,7 +203,7 @@ def test_reply_to_addr():
 
 def test_subject():
     me = NoopMassEmail()
-    sub = 'Testing'
+    sub = "Testing"
 
     me.set_subject(sub)
 
@@ -213,17 +216,17 @@ def test_validate():
     with pytest.raises(Exception) as e:
         me.validate()
 
-    assert 'address and subject' in str(e)
+    assert "address and subject" in str(e)
 
-    me.set_subject('something')
-    me.set_from_addr('spam@spam.com')
+    me.set_subject("something")
+    me.set_from_addr("spam@spam.com")
 
     me.validate()
 
 
 def test_webhook_data():
     me = NoopMassEmail()
-    sub = 'Testing'
+    sub = "Testing"
 
     me.set_webhook_data(sub)
 
@@ -270,7 +273,7 @@ def test_importance():
 
 def test_ip_pool():
     me = NoopMassEmail()
-    pool = 'abc_group'
+    pool = "abc_group"
 
     me.set_ip_pool(pool)
 
@@ -279,7 +282,7 @@ def test_ip_pool():
 
 def test_template_name():
     me = NoopMassEmail()
-    template_name = 'test template'
+    template_name = "test template"
 
     me.set_template_name(template_name)
 
@@ -294,15 +297,15 @@ def test_send():
 
 
 def test_delimiters():
-    '''
+    """
     By default, we assume the ESP cannot hot-swap variable delimiters the way
     SendGrid can, so we raise NotImplementedError and call it a day.
-    '''
+    """
 
     me = NoopMassEmail()
 
     with pytest.raises(NotImplementedError):
-        me.set_variable_delimiters(start='*|', end='|*')
+        me.set_variable_delimiters(start="*|", end="|*")
 
     with pytest.raises(NotImplementedError):
         me.get_variable_delimiters()

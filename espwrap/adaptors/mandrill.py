@@ -1,11 +1,10 @@
-from __future__ import print_function, division, unicode_literals, absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
 
 import mandrill
 
-from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
-
+from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT, MassEmail, batch
 
 if sys.version_info < (3,):
     range = xrange
@@ -19,68 +18,76 @@ class MandrillMassEmail(MassEmail):
 
     def _prepare_payload(self, recipients=None):
         def namestr(rec):
-            if not rec.get('name'):
-                return rec.get('email')
+            if not rec.get("name"):
+                return rec.get("email")
 
-            return '{} <{}>'.format(rec['name'], rec['email'])
+            return "{} <{}>".format(rec["name"], rec["email"])
 
         if not recipients:
             recipients = list(self.recipients)
 
         payload = {
-            'from_email': self.from_addr,
-            'html': self.body.get(MIMETYPE_HTML),
-            'text': self.body.get(MIMETYPE_TEXT),
-            'subject': self.subject,
-            'to': [],
-            'preserve_recipients': False,
-            'merge': True,
-            'merge_language': 'mailchimp',
-            'global_merge_vars': [{
-                'name': key,
-                'content': value,
-            } for key, value in self.global_merge_vars.items()],
-            'merge_vars': [],
-            'important': self.important,
+            "from_email": self.from_addr,
+            "html": self.body.get(MIMETYPE_HTML),
+            "text": self.body.get(MIMETYPE_TEXT),
+            "subject": self.subject,
+            "to": [],
+            "preserve_recipients": False,
+            "merge": True,
+            "merge_language": "mailchimp",
+            "global_merge_vars": [
+                {
+                    "name": key,
+                    "content": value,
+                }
+                for key, value in self.global_merge_vars.items()
+            ],
+            "merge_vars": [],
+            "important": self.important,
         }
 
         for index, recip in enumerate(recipients):
-            payload['to'].append({
-                'type': 'to',
-                'name': recip.get('name', recip['email']),
-                'email': recip['email'],
-            })
+            payload["to"].append(
+                {
+                    "type": "to",
+                    "name": recip.get("name", recip["email"]),
+                    "email": recip["email"],
+                }
+            )
 
-            payload['merge_vars'].append({
-                'rcpt': recip['email'],
-                'vars': [{
-                    'name': key,
-                    'content': value,
-                } for key, value in recip.get('merge_vars', {}).items()],
-            })
+            payload["merge_vars"].append(
+                {
+                    "rcpt": recip["email"],
+                    "vars": [
+                        {
+                            "name": key,
+                            "content": value,
+                        }
+                        for key, value in recip.get("merge_vars", {}).items()
+                    ],
+                }
+            )
 
-        payload['track_clicks'] = self.track_clicks
-        payload['track_opens'] = self.track_opens
-        payload['tags'] = self.tags
+        payload["track_clicks"] = self.track_clicks
+        payload["track_opens"] = self.track_opens
+        payload["tags"] = self.tags
 
         if self.webhook_data:
-            payload['metadata'] = self.webhook_data
+            payload["metadata"] = self.webhook_data
 
         return payload
 
     def send(self):
         self.validate()
 
-        kwargs = {
-            'async': True
-        }
+        kwargs = {"async": True}
 
         if self.ip_pool:
-            kwargs['ip_pool'] = self.ip_pool
+            kwargs["ip_pool"] = self.ip_pool
 
         if self.template_name:
             mandrill_send = self.client.messages.send_template
-            kwargs['template_name'] = self.template_name
+            kwargs["template_name"] = self.template_name
         else:
             mandrill_send = self.client.messages.send
 

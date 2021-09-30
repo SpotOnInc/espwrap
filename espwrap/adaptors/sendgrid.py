@@ -1,13 +1,12 @@
-from __future__ import print_function, division, unicode_literals, absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import re
 import sys
 
 import sendgrid
 from smtpapi import SMTPAPIHeader
 
-from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
+from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT, MassEmail, batch
 
 if sys.version_info < (3,):
     range = xrange
@@ -24,38 +23,41 @@ class SendGridMassEmail(MassEmail):
                 self.client = sendgrid.SendGridClient(api_key)
             except AttributeError as e:
                 raise Exception(
-                    '{}.\nSendgrid client attribute is SendGridAPIClient in newer versions. \
-Also tried older client name, SendGridClient. Both failed.'.format(e))
-        
-        self.delimiters = ('-', '-')
+                    "{}.\nSendgrid client attribute is SendGridAPIClient in newer versions. \
+Also tried older client name, SendGridClient. Both failed.".format(
+                        e
+                    )
+                )
 
-    def set_variable_delimiters(self, start='-', end='-'):
+        self.delimiters = ("-", "-")
+
+    def set_variable_delimiters(self, start="-", end="-"):
         self.delimiters = (start, end)
 
     def get_variable_delimiters(self, as_dict=False):
         if as_dict:
             return {
-                'start': self.delimiters[0],
-                'end': self.delimiters[1],
+                "start": self.delimiters[0],
+                "end": self.delimiters[1],
             }
 
         return self.delimiters
 
     def add_tags(self, *tags):
         if len(tags) > 10:
-            raise Exception('Too many tags, SendGrid limits to 10 per email')
+            raise Exception("Too many tags, SendGrid limits to 10 per email")
 
         if len(tags) + len(self.tags) > 10:
-            raise Exception('Requested tags would have raised total to above Sendgrid limit of 10')
+            raise Exception("Requested tags would have raised total to above Sendgrid limit of 10")
 
         return super(SendGridMassEmail, self).add_tags(*tags)
 
     def _prepare_payload(self, recipients=None):
         def namestr(rec):
-            if not rec.get('name'):
-                return rec.get('email')
+            if not rec.get("name"):
+                return rec.get("email")
 
-            return '"{}" <{}>'.format(rec['name'].replace('"', ''), rec['email'].replace(',', ''))
+            return '"{}" <{}>'.format(rec["name"].replace('"', ""), rec["email"].replace(",", ""))
 
         if not recipients:
             recipients = self.solidify_recipients()
@@ -67,9 +69,9 @@ Also tried older client name, SendGridClient. Both failed.'.format(e))
         merge_vars = {}
 
         for key, val in self.global_merge_vars.items():
-            keystr = ':{}'.format(key)
+            keystr = ":{}".format(key)
 
-            new_key = '{1}{0}{2}'.format(key, *self.delimiters)
+            new_key = "{1}{0}{2}".format(key, *self.delimiters)
 
             merge_vars[new_key] = [keystr] * num_rec
 
@@ -78,8 +80,8 @@ Also tried older client name, SendGridClient. Both failed.'.format(e))
         for index, recip in enumerate(recipients):
             payload.add_to(recip if isinstance(recip, str) else namestr(recip))
 
-            for rkey, rvalue in recip.get('merge_vars', {}).items():
-                new_key = '{1}{0}{2}'.format(rkey, *self.delimiters)
+            for rkey, rvalue in recip.get("merge_vars", {}).items():
+                new_key = "{1}{0}{2}".format(rkey, *self.delimiters)
 
                 if not merge_vars.get(new_key):
                     merge_vars[new_key] = [None] * num_rec
@@ -93,13 +95,13 @@ Also tried older client name, SendGridClient. Both failed.'.format(e))
             payload.set_ip_pool(self.ip_pool)
 
         if self.template_name:
-            payload.add_filter('templates', 'enabled', 1)
-            payload.add_filter('templates', 'template_id', self.template_name)
+            payload.add_filter("templates", "enabled", 1)
+            payload.add_filter("templates", "template_id", self.template_name)
 
         payload.set_substitutions(merge_vars)
 
-        payload.add_filter('clicktrack', 'enable', self.track_clicks and 1 or 0)
-        payload.add_filter('opentrack', 'enable', self.track_opens and 1 or 0)
+        payload.add_filter("clicktrack", "enable", self.track_clicks and 1 or 0)
+        payload.add_filter("opentrack", "enable", self.track_opens and 1 or 0)
 
         payload.set_categories(self.tags)
 
@@ -129,10 +131,10 @@ Also tried older client name, SendGridClient. Both failed.'.format(e))
                     msg.set_html(self.body[MIMETYPE_HTML])
 
                 if self.important:
-                    msg.set_headers({'Priority': 'Urgent', 'Importance': 'high'})
+                    msg.set_headers({"Priority": "Urgent", "Importance": "high"})
 
                 if self.attachments:
-                    for file_name, file_path_or_string in self.attachments.iteritems():
+                    for file_name, file_path_or_string in self.attachments.items():
                         msg.add_attachment(file_name, file_path_or_string)
 
                 if self.send_at:

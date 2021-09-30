@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, division, unicode_literals, absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import base64
 import json
@@ -8,23 +8,39 @@ import sys
 import time
 
 import sendgrid
-from sendgrid.helpers.mail import (
-    Mail, From, To, Cc, Bcc, Subject, Substitution,
-    CustomArg, SendAt, Content, MimeType, Attachment, FileName,
-    FileContent, ReplyTo, Category, IpPoolName,
-    TrackingSettings, ClickTracking,
-    OpenTracking, OpenTrackingSubstitutionTag,
-    Section)
 from python_http_client.exceptions import HTTPError, TooManyRequestsError
+from sendgrid.helpers.mail import (
+    Attachment,
+    Bcc,
+    Category,
+    Cc,
+    ClickTracking,
+    Content,
+    CustomArg,
+    FileContent,
+    FileName,
+    From,
+    IpPoolName,
+    Mail,
+    MimeType,
+    OpenTracking,
+    OpenTrackingSubstitutionTag,
+    ReplyTo,
+    SendAt,
+    Subject,
+    Substitution,
+    To,
+    TrackingSettings,
+)
 
-from espwrap.base import MassEmail, batch, MIMETYPE_HTML, MIMETYPE_TEXT
 from espwrap.adaptors.sendgrid_common import breakdown_recipients
+from espwrap.base import MIMETYPE_HTML, MIMETYPE_TEXT, MassEmail, batch
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -33,7 +49,7 @@ if sys.version_info > (2,):
     basestring = str
 
 
-_HTTP_EXC_MSG = 'SendGrid responded with an HTTP-error code.  Email Subject: %s, Status Code: %s, Reason: %s, Body: %s'
+_HTTP_EXC_MSG = "SendGrid responded with an HTTP-error code.  Email Subject: %s, Status Code: %s, Reason: %s, Body: %s"
 MAX_ATTEMPTS = 3
 
 
@@ -43,25 +59,25 @@ class SendGridMassEmail(MassEmail):
 
         self.client = sendgrid.SendGridAPIClient(api_key)
 
-        self.delimiters = ('-', '-')
+        self.delimiters = ("-", "-")
 
-    def set_variable_delimiters(self, start='-', end='-'):
+    def set_variable_delimiters(self, start="-", end="-"):
         self.delimiters = (start, end)
 
     def get_variable_delimiters(self, as_dict=False):
         if as_dict:
             return {
-                'start': self.delimiters[0],
-                'end': self.delimiters[1],
+                "start": self.delimiters[0],
+                "end": self.delimiters[1],
             }
         return self.delimiters
 
     def add_tags(self, *tags):
         if len(tags) > 10:
-            raise Exception('Too many tags, SendGrid limits to 10 per email')
+            raise Exception("Too many tags, SendGrid limits to 10 per email")
 
         if len(tags) + len(self.tags) > 10:
-            raise Exception('Requested tags would have raised total to above Sendgrid limit of 10')
+            raise Exception("Requested tags would have raised total to above Sendgrid limit of 10")
 
         return super(SendGridMassEmail, self).add_tags(*tags)
 
@@ -71,18 +87,12 @@ class SendGridMassEmail(MassEmail):
 
         # Content (Text)
         if self.body[MIMETYPE_TEXT]:
-            content = Content(
-                MimeType.text,
-                self.body[MIMETYPE_TEXT]
-            )
+            content = Content(MimeType.text, self.body[MIMETYPE_TEXT])
             message.content = content
 
         # Content (Html)
         if self.body[MIMETYPE_HTML]:
-            content = Content(
-                MimeType.html,
-                self.body[MIMETYPE_HTML]
-            )
+            content = Content(MimeType.html, self.body[MIMETYPE_HTML])
             message.content = content
 
         message.subject = Subject(self.subject)
@@ -116,9 +126,9 @@ class SendGridMassEmail(MassEmail):
 
         # Attachment
         if self.attachments:
-            for file_name, file_path_or_string in self.attachments.iteritems():
+            for file_name, file_path_or_string in self.attachments.items():
                 attachment = Attachment()
-                encoded = base64.b64encode(str(file_path_or_string))
+                encoded = base64.b64encode(file_path_or_string).decode("ascii")
                 attachment.file_content = FileContent(encoded)
                 attachment.file_name = FileName(file_name)
             message.attachment = attachment
@@ -135,22 +145,18 @@ class SendGridMassEmail(MassEmail):
 
         # Template Name
         if self.template_name:
-            message.custom_arg = CustomArg('template_name', self.template_name)
+            message.custom_arg = CustomArg("template_name", self.template_name)
 
         # Tracking
         tracking_settings = TrackingSettings()
         # Opens
         if self.track_opens:
             tracking_settings.open_tracking = OpenTracking(
-                self.track_opens,
-                OpenTrackingSubstitutionTag("open_tracking")
+                self.track_opens, OpenTrackingSubstitutionTag("open_tracking")
             )
         # Clicks
         if self.track_clicks:
-            tracking_settings.click_tracking = ClickTracking(
-                self.track_clicks,
-                self.track_clicks
-            )
+            tracking_settings.click_tracking = ClickTracking(self.track_clicks, self.track_clicks)
         message.tracking_settings = tracking_settings
 
         if self.from_addr and self.from_name:
@@ -160,41 +166,42 @@ class SendGridMassEmail(MassEmail):
 
         for subgrps in to_send:
             for subgrp in subgrps:
-                substitutions = subgrp['merge_vars']
+                substitutions = subgrp["merge_vars"]
                 substitutions_dict = {}
 
                 for key, val in substitutions.items():
-                    new_key = '{1}{0}{2}'.format(key, *self.delimiters)
+                    new_key = "{1}{0}{2}".format(key, *self.delimiters)
                     formatted_val = val
                     if not isinstance(val, basestring):
                         try:
                             formatted_val = str(val)
                         except UnicodeEncodeError:
-                            formatted_val = val.encode('utf-8')
+                            formatted_val = val.encode("utf-8")
 
                     substitutions_dict[new_key] = formatted_val
 
-                email = subgrp['email']
-                name = subgrp['name']
+                email = subgrp["email"]
+                name = subgrp["name"]
                 to_emails.append(
                     To(
                         email=email,
                         name=name,
                         substitutions=substitutions_dict,
-                        subject=self.generate_subject(email, name))
+                        subject=self.generate_subject(email, name),
+                    )
                 )
 
         message.add_to(to_emails, is_multiple=True)
 
         # Global Subs
         for key, val in self.global_merge_vars.items():
-            new_key = '{1}{0}{2}'.format(key, *self.delimiters)
+            new_key = "{1}{0}{2}".format(key, *self.delimiters)
             formatted_val = val
             if not isinstance(val, basestring):
                 try:
                     formatted_val = str(val)
                 except UnicodeEncodeError:
-                    formatted_val = val.encode('utf-8')
+                    formatted_val = val.encode("utf-8")
 
             message.substitution = Substitution(new_key, formatted_val)
 
@@ -210,9 +217,9 @@ class SendGridMassEmail(MassEmail):
         :return subject: sendgrid.helpers.mail.Subject
         """
         try:
-            username = email.split('@')[0]
-            if '.' in username or '+' in username:
-                return Subject('{} [{}]'.format(self.subject, email))
+            username = email.split("@")[0]
+            if "." in username or "+" in username:
+                return Subject("{} [{}]".format(self.subject, email))
         except Exception as e:
             logger.exception(e)
 
@@ -220,7 +227,7 @@ class SendGridMassEmail(MassEmail):
 
     def send(self):
 
-        responses=[]
+        responses = []
 
         self.validate()
 
@@ -235,17 +242,19 @@ class SendGridMassEmail(MassEmail):
             message_dict = message.get()
 
             # do not send if custom args >10 KB (sendgrid rule)
-            if 'custom_args' in message_dict:
-                message_custom_args = len(json.dumps(message_dict['custom_args']))
+            if "custom_args" in message_dict:
+                message_custom_args = len(json.dumps(message_dict["custom_args"]))
                 custom_args_size = sys.getsizeof(message_custom_args)
                 custom_args_kb = 0.001 * float(custom_args_size)
                 if custom_args_kb > 10:
-                    raise Exception('attempted to send {} KB custom_args, not to exceed 10 KB.'.format(custom_args_kb))
+                    raise Exception("attempted to send {} KB custom_args, not to exceed 10 KB.".format(custom_args_kb))
 
             # do not send if number of recipients >1000 (sendgrid rule)
-            num_recips = len(message_dict['personalizations'])
+            num_recips = len(message_dict["personalizations"])
             if num_recips > 1000:
-                raise Exception('attempted to send to {} email addresses, not to exceed 1000 addresses.'.format(num_recips))
+                raise Exception(
+                    "attempted to send to {} email addresses, not to exceed 1000 addresses.".format(num_recips)
+                )
 
             """
             send message and append response from this grp to list of returned responses for all grouped_recipients
@@ -258,13 +267,13 @@ class SendGridMassEmail(MassEmail):
                     responses.append(response)
                 except TooManyRequestsError:
                     attempt += 1
-                    logger.exception('[{}] Too many requests, trying to resend the message...'.format(attempt))
+                    logger.exception("[{}] Too many requests, trying to resend the message...".format(attempt))
                     time.sleep(1)
                     continue
                 except HTTPError as e:
                     logger.exception(_HTTP_EXC_MSG, self.subject, e.status_code, e.reason, e.body)
                 except Exception:
-                    logger.exception('Unknown exception while sending a SendGridMassEmail.')
+                    logger.exception("Unknown exception while sending a SendGridMassEmail.")
                 break
 
         # return list of all responses for each grp in grouped_recipients
