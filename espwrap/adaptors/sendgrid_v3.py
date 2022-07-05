@@ -185,12 +185,10 @@ class SendGridMassEmail(MassEmail):
 
         #CC and BCC
         for personalization in message.personalizations:
-            if self.cc_list:
-                for cc_email in self.cc_list:
-                    personalization.add_cc(Cc(cc_email))
-            if self.bcc_list:
-                for bcc_email in self.bcc_list:
-                    personalization.add_bcc(Bcc(bcc_email))
+            for cc_email in self.cc_list:
+                personalization.add_cc(Cc(cc_email))
+            for bcc_email in self.bcc_list:
+                personalization.add_bcc(Bcc(bcc_email))
 
         # Global Subs
         for key, val in self.global_merge_vars.items():
