@@ -114,16 +114,6 @@ class SendGridMassEmail(MassEmail):
         if self.ip_pool:
             message.ip_pool_name = IpPoolName(self.ip_pool)
 
-        # CC
-        if self.cc_list:
-            list_cc = [Cc(email) for email in self.cc_list]
-            message.cc = list_cc
-
-        # BCC
-        if self.bcc_list:
-            list_bcc = [Bcc(email) for email in self.cc_list]
-            message.bcc = list_bcc
-
         # Attachment
         if self.attachments:
             for file_name, file_path_or_string in self.attachments.items():
@@ -192,6 +182,13 @@ class SendGridMassEmail(MassEmail):
                 )
 
         message.add_to(to_emails, is_multiple=True)
+
+        #CC and BCC
+        for personalization in message.personalizations:
+            for cc_email in self.cc_list:
+                personalization.add_cc(Cc(cc_email))
+            for bcc_email in self.bcc_list:
+                personalization.add_bcc(Bcc(bcc_email))
 
         # Global Subs
         for key, val in self.global_merge_vars.items():
