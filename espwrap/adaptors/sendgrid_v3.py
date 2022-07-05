@@ -121,7 +121,7 @@ class SendGridMassEmail(MassEmail):
 
         # BCC
         if self.bcc_list:
-            list_bcc = [Bcc(email) for email in self.cc_list]
+            list_bcc = [Bcc(email) for email in self.bcc_list]
             message.bcc = list_bcc
 
         # Attachment
