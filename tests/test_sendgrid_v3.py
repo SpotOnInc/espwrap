@@ -134,6 +134,9 @@ def test_message_construction():
 
     delims = me.get_variable_delimiters()
 
+    me.add_cc("testcc@spam.com")
+    me.add_bcc("testbcc@spam.com")
+
     grouped_recipients = batch(list(me.recipients), me.partition)
 
     for grp in grouped_recipients:
@@ -141,6 +144,7 @@ def test_message_construction():
         to_send = breakdown_recipients(grp)
 
         message = me.message_constructor(to_send)
+       
         message_dict = message.get()
 
         print(message_dict)
@@ -157,6 +161,14 @@ def test_message_construction():
         assert message_dict["personalizations"][1]["to"][0]["email"] == "spam2@spam.com"
         assert message_dict["personalizations"][2]["to"][0]["name"] == "Josh"
         assert message_dict["personalizations"][2]["to"][0]["email"] == "spam@spam.com"
+
+        assert message_dict["personalizations"][0]["cc"][0]["email"] == "testcc@spam.com"
+        assert message_dict["personalizations"][1]["cc"][0]["email"] == "testcc@spam.com"
+        assert message_dict["personalizations"][2]["cc"][0]["email"] == "testcc@spam.com"
+        assert message_dict["personalizations"][0]["bcc"][0]["email"] == "testbcc@spam.com"
+        assert message_dict["personalizations"][1]["bcc"][0]["email"] == "testbcc@spam.com"
+        assert message_dict["personalizations"][2]["bcc"][0]["email"] == "testbcc@spam.com"
+        
 
         company_name_key = delims[0] + "COMPANY_NAME" + delims[1]
         assert message_dict["personalizations"][0]["substitutions"][company_name_key] == "UnitTest Spam Corp the Second"
