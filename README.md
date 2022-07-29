@@ -302,6 +302,15 @@ Support: SendGrid
 > delimiters.
 
 
+### `set_bypass_management(bypass_spam_management, bypass_bounce_management, bypass_unsubscribe_management)`
+Support: SendGrid V3
+
+> A collection of different mail settings that you can use to specify how you
+> would like this email to be handled.
+> bypass_spam_management - True to bypass, default False
+> bypass_bounce_management - True to bypass, default False
+> bypass_unsubscribe_management - True to bypass, default False
+
 ### `get_variable_delimiters(as_dict=False)`
 Support: SendGrid
 
