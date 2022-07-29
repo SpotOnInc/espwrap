@@ -22,6 +22,10 @@ from sendgrid.helpers.mail import (
     From,
     IpPoolName,
     Mail,
+    MailSettings,
+    BypassBounceManagement,
+    BypassSpamManagement,
+    BypassUnsubscribeManagement,
     MimeType,
     OpenTracking,
     OpenTrackingSubstitutionTag,
@@ -60,6 +64,7 @@ class SendGridMassEmail(MassEmail):
         self.client = sendgrid.SendGridAPIClient(api_key)
 
         self.delimiters = ("-", "-")
+        self.mail_settings = MailSettings()
 
     def set_variable_delimiters(self, start="-", end="-"):
         self.delimiters = (start, end)
@@ -71,6 +76,16 @@ class SendGridMassEmail(MassEmail):
                 "end": self.delimiters[1],
             }
         return self.delimiters
+
+    def set_bypass_management(self,
+        bypass_spam_management=False,
+        bypass_bounce_management=False,
+        bypass_unsubscribe_management=False):
+
+        # mail_settings see https://docs.sendgrid.com/api-reference/mail-send/mail-send
+        self.mail_settings.bypass_spam_management = BypassSpamManagement(bypass_spam_management),
+        self.mail_settings.bypass_bounce_management = BypassBounceManagement(bypass_bounce_management)
+        self.mail_settings.bypass_unsubscribe_management = BypassUnsubscribeManagement(bypass_unsubscribe_management)
 
     def add_tags(self, *tags):
         if len(tags) > 10:
@@ -148,6 +163,9 @@ class SendGridMassEmail(MassEmail):
         if self.track_clicks:
             tracking_settings.click_tracking = ClickTracking(self.track_clicks, self.track_clicks)
         message.tracking_settings = tracking_settings
+
+        # mail_settings see https://docs.sendgrid.com/api-reference/mail-send/mail-send
+        message.mail_settings = self.mail_settings
 
         if self.from_addr and self.from_name:
             message.from_email = From(email=self.from_addr, name=self.from_name)
