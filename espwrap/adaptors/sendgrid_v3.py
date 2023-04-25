@@ -23,9 +23,6 @@ from sendgrid.helpers.mail import (
     IpPoolName,
     Mail,
     MailSettings,
-    BypassBounceManagement,
-    BypassSpamManagement,
-    BypassUnsubscribeManagement,
     MimeType,
     OpenTracking,
     OpenTrackingSubstitutionTag,
@@ -48,6 +45,13 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+try:
+    from sendgrid.helpers.mail.bypass_spam_management import BypassSpamManagement
+    from sendgrid.helpers.mail.bypass_bounce_management import BypassBounceManagement
+    from sendgrid.helpers.mail.bypass_unsubscribe_management import BypassUnsubscribeManagement
+except ImportError as e:
+    logger.exception(e)
+    pass
 
 if sys.version_info > (2,):
     basestring = str
