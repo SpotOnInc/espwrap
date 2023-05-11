@@ -243,9 +243,6 @@ class MassEmail(object):
     def set_template_name(self, template_name):
         self.template_name = template_name
 
-    def set_bypass_management(self, *args, **kwargs):
-        raise NotImplementedError("Your ESP evidently does not support bypass management")
-
     def set_variable_delimiters(self, start="-", end="-"):
         raise NotImplementedError("Your ESP evidently does not support variable delimiters")
 

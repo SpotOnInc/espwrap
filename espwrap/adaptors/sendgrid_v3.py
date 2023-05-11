@@ -45,14 +45,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-try:
-    from sendgrid.helpers.mail.bypass_spam_management import BypassSpamManagement
-    from sendgrid.helpers.mail.bypass_bounce_management import BypassBounceManagement
-    from sendgrid.helpers.mail.bypass_unsubscribe_management import BypassUnsubscribeManagement
-except ImportError as e:
-    logger.exception(e)
-    pass
-
 if sys.version_info > (2,):
     basestring = str
 
@@ -80,16 +72,6 @@ class SendGridMassEmail(MassEmail):
                 "end": self.delimiters[1],
             }
         return self.delimiters
-
-    def set_bypass_management(self,
-        bypass_spam_management=False,
-        bypass_bounce_management=False,
-        bypass_unsubscribe_management=False):
-
-        # mail_settings see https://docs.sendgrid.com/api-reference/mail-send/mail-send
-        self.mail_settings.bypass_spam_management = BypassSpamManagement(bypass_spam_management),
-        self.mail_settings.bypass_bounce_management = BypassBounceManagement(bypass_bounce_management)
-        self.mail_settings.bypass_unsubscribe_management = BypassUnsubscribeManagement(bypass_unsubscribe_management)
 
     def add_tags(self, *tags):
         if len(tags) > 10:
