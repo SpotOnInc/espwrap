@@ -1,0 +1,17 @@
+name: "Validate Techdocs Build"
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - ".github/workflows/check-docs.yaml"
+jobs:
+  main:
+    runs-on: large
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Validate techdocs"
+        uses: spotoninc/github-action-publish-docs@v1
+        with:
+          dry-run: "true"
