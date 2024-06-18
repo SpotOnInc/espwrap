@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: espwrap
+  description: |
+    Please fill before merging this PR
+  annotations:
+    github.com/project-slug: SpotOnInc/espwrap
+    spoton.com/domain: domain:default/core-services
+  tags:
+    - python # language
+  links: []
+  # Please fill before merging this PR
+spec:
+  type: service # Please confirm before merging this PR
+  owner: user:default/jimbattin
+  lifecycle: production # Please confirm before merging this PR
