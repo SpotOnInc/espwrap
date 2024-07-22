@@ -14,3 +14,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: spotoninc/github-action-validate-catalog-info@v1
+
