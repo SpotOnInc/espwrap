@@ -1,0 +1,28 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: espwrap
+  description: | 
+    A light wrapper around email service providers. Allows (semi-)seamless movement between supported ESP backends.
+  
+  annotations:
+    spoton.com/domain: domain:default/core-services
+    github.com/project-slug: SpotOnInc/espwrap
+  
+    backstage.io/techdocs-ref: dir:..
+  
+  tags:
+    - python # language
+  links:
+    
+    - title: "JIRA board"
+      type: project-management
+      url: https://spotonteam.atlassian.net/browse/CSVC
+      icon: help
+      
+spec:
+  type: library
+  owner: group:default/core-backend
+  lifecycle: production
+

@@ -187,7 +187,7 @@ class SendGridMassEmail(MassEmail):
 
         message.add_to(to_emails, is_multiple=True)
 
-        #CC and BCC
+        # CC and BCC
         for personalization in message.personalizations:
             for cc_email in self.cc_list:
                 personalization.add_cc(Cc(cc_email))
